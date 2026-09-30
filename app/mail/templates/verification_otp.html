@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Verify your email</title>
+</head>
+
+<body
+    style="
+        margin: 0;
+        padding: 0;
+        background-color: #f4f6f8;
+        font-family: Arial, Helvetica, sans-serif;
+    "
+>
+    <table
+        width="100%"
+        cellspacing="0"
+        cellpadding="0"
+        style="
+            background-color: #f4f6f8;
+            padding: 40px 15px;
+        "
+    >
+        <tr>
+            <td align="center">
+
+                <table
+                    width="100%"
+                    cellspacing="0"
+                    cellpadding="0"
+                    style="
+                        max-width: 560px;
+                        background-color: #ffffff;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+                    "
+                >
+
+                    <!-- Header -->
+                    <tr>
+                        <td
+                            style="
+                                background-color: #2563eb;
+                                padding: 28px;
+                                text-align: center;
+                            "
+                        >
+                            <h1
+                                style="
+                                    margin: 0;
+                                    color: #ffffff;
+                                    font-size: 26px;
+                                "
+                            >
+                                {{ app_name }}
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td
+                            style="
+                                padding: 35px 40px;
+                                color: #374151;
+                            "
+                        >
+                            <h2
+                                style="
+                                    margin-top: 0;
+                                    margin-bottom: 20px;
+                                    color: #111827;
+                                    font-size: 24px;
+                                "
+                            >
+                                Verify your email
+                            </h2>
+
+                            <p
+                                style="
+                                    font-size: 16px;
+                                    line-height: 1.6;
+                                    margin-bottom: 16px;
+                                "
+                            >
+                                Hello {{ first_name }},
+                            </p>
+
+                            <p
+                                style="
+                                    font-size: 16px;
+                                    line-height: 1.6;
+                                    margin-bottom: 24px;
+                                "
+                            >
+                                Thank you for creating an account with
+                                <strong>{{ app_name }}</strong>.
+                                Use the verification code below to verify
+                                your email address.
+                            </p>
+
+                            <!-- OTP Box -->
+                            <div
+                                style="
+                                    background-color: #eff6ff;
+                                    border: 1px solid #bfdbfe;
+                                    border-radius: 10px;
+                                    padding: 22px;
+                                    text-align: center;
+                                    margin: 25px 0;
+                                "
+                            >
+                                <p
+                                    style="
+                                        margin: 0 0 10px;
+                                        color: #6b7280;
+                                        font-size: 14px;
+                                    "
+                                >
+                                    Your verification code
+                                </p>
+
+                                <div
+                                    style="
+                                        font-size: 36px;
+                                        font-weight: bold;
+                                        letter-spacing: 8px;
+                                        color: #2563eb;
+                                    "
+                                >
+                                    {{ otp }}
+                                </div>
+                            </div>
+
+                            <p
+                                style="
+                                    font-size: 15px;
+                                    line-height: 1.6;
+                                    color: #4b5563;
+                                "
+                            >
+                                This code will expire in
+                                <strong>
+                                    {{ expiry_minutes }} minutes
+                                </strong>.
+                            </p>
+
+                            <p
+                                style="
+                                    font-size: 14px;
+                                    line-height: 1.6;
+                                    color: #6b7280;
+                                    margin-top: 25px;
+                                "
+                            >
+                                If you did not create this account,
+                                you can safely ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="
+                                background-color: #f9fafb;
+                                padding: 20px;
+                                text-align: center;
+                                border-top: 1px solid #e5e7eb;
+                            "
+                        >
+                            <p
+                                style="
+                                    margin: 0;
+                                    color: #9ca3af;
+                                    font-size: 13px;
+                                "
+                            >
+                                © {{ app_name }}
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

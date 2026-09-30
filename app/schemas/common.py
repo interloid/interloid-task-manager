@@ -1,4 +1,4 @@
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel
 
@@ -10,15 +10,32 @@ class ErrorDetail(BaseModel):
     details: Any | None = None
 
 
-class APIResponse(BaseModel, Generic[T]):
-    success: bool = True
+class PaginationMeta(BaseModel):
+    page: int
+    page_size: int
+    total: int
+    total_pages: int
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    success: Literal[True] = True
     message: str
-    data: T | None = None
-    error: ErrorDetail | None = None
+    data: list[T]
+    pagination: PaginationMeta
+
+
+class APIResponse(BaseModel, Generic[T]):
+    success: Literal[True] = True
+    message: str
+    data: T
+
+
+class MessageResponse(BaseModel):
+    success: Literal[True] = True
+    message: str
 
 
 class ErrorResponse(BaseModel):
-    success: bool = False
+    success: Literal[False] = False
     message: str
-    data: None = None
     error: ErrorDetail

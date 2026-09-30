@@ -53,7 +53,6 @@ async def test_user_can_get_own_task_by_id(
 
     assert body["success"] is True
     assert body["message"] == "Task fetched successfully"
-    assert body["error"] is None
 
     task = body["data"]
 
@@ -100,15 +99,14 @@ async def test_get_task_by_id_returns_404_for_unknown_task(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
-    assert body["error"]["details"] is None
 
 
 @pytest.mark.anyio
 async def test_user_cannot_get_another_users_task(
     client: AsyncClient,
     test_user: User,
+    second_user: User,
 ) -> None:
     login_response = await client.post(
         "/api/v1/auth/login",
@@ -126,22 +124,10 @@ async def test_user_cannot_get_another_users_task(
         "Authorization": f"Bearer {access_token}",
     }
 
-    second_user_response = await client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "gettaskseconduser@example.com",
-            "password": "Test1234",
-            "first_name": "Second",
-            "last_name": "User",
-        },
-    )
-
-    assert second_user_response.status_code == 201
-
     second_login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "gettaskseconduser@example.com",
+            "email": second_user.email,
             "password": "Test1234",
         },
     )
@@ -181,7 +167,6 @@ async def test_user_cannot_get_another_users_task(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
@@ -250,7 +235,6 @@ async def test_admin_can_get_another_users_task(
 
     assert body["success"] is True
     assert body["message"] == "Task fetched successfully"
-    assert body["error"] is None
 
     task = body["data"]
 

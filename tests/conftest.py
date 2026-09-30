@@ -107,6 +107,7 @@ async def test_user(
         last_name="User",
         role=RoleName.USER,
         is_active=True,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -128,6 +129,7 @@ async def inactive_user(
         last_name="User",
         role=RoleName.USER,
         is_active=False,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -149,6 +151,7 @@ async def admin_user(
         last_name="User",
         role=RoleName.ADMIN,
         is_active=True,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -170,6 +173,29 @@ async def second_admin(
         last_name="Admin",
         role=RoleName.ADMIN,
         is_active=True,
+        is_verified=True,
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user
+
+
+@pytest.fixture
+async def second_user(
+    db_session: AsyncSession,
+) -> User:
+    user = User(
+        id=uuid7(),
+        email="seconduser@example.com",
+        password_hash=hash_password("Test1234"),
+        first_name="Second",
+        last_name="User",
+        role=RoleName.USER,
+        is_active=True,
+        is_verified=True,
     )
 
     db_session.add(user)

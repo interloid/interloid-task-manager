@@ -234,7 +234,7 @@ async def test_logout_invalidates_access_token(
     assert logout_response.status_code == 200
 
     me_response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers=headers,
     )
 
@@ -279,7 +279,7 @@ async def test_logout_all_invalidates_existing_access_tokens(
         second_access_token,
     ]:
         response = await client.get(
-            "/api/v1/auth/me",
+            "/api/v1/users/me",
             headers={
                 "Authorization": f"Bearer {access_token}",
             },

@@ -1,31 +1,57 @@
 from app.schemas.auth import (
     ChangePasswordRequest,
+    ForgotPasswordRequest,
     LoginRequest,
     LoginResponse,
     LogoutRequest,
     RefreshRequest,
     RegisterRequest,
+    ResendVerificationRequest,
+    ResetPasswordRequest,
     SessionListResponse,
     SessionResponse,
     UserResponse,
+    VerifyEmailRequest,
 )
 from app.schemas.common import (
     APIResponse,
     ErrorDetail,
     ErrorResponse,
+    MessageResponse,
+    PaginatedResponse,
+    PaginationMeta,
 )
+from app.schemas.task import (
+    TaskCreateRequest,
+    TaskListQuery,
+    TaskResponse,
+    TaskUpdateRequest,
+)
+from app.schemas.user import UserUpdateRequest
 
 __all__ = [
     "APIResponse",
     "ChangePasswordRequest",
     "ErrorDetail",
     "ErrorResponse",
+    "ForgotPasswordRequest",
     "LoginRequest",
     "LoginResponse",
     "LogoutRequest",
+    "MessageResponse",
+    "PaginatedResponse",
+    "PaginationMeta",
     "RefreshRequest",
     "RegisterRequest",
+    "ResendVerificationRequest",
+    "ResetPasswordRequest",
     "SessionListResponse",
     "SessionResponse",
+    "TaskCreateRequest",
+    "TaskListQuery",
+    "TaskResponse",
+    "TaskUpdateRequest",
     "UserResponse",
+    "UserUpdateRequest",
+    "VerifyEmailRequest",
 ]

@@ -8,9 +8,10 @@ from app.exceptions.user import (
 )
 from app.models.user import User
 from app.repositories.user import UserRepository
-from app.schemas.auth import UserResponse
-from app.schemas.user import (
-    UserListResponse,
+from app.schemas import (
+    PaginatedResponse,
+    PaginationMeta,
+    UserResponse,
     UserUpdateRequest,
 )
 
@@ -21,21 +22,29 @@ class UserService:
 
     async def list_users(
         self,
-        limit: int,
-        offset: int,
-    ) -> UserListResponse:
+        page: int,
+        page_size: int,
+    ) -> PaginatedResponse[UserResponse]:
+        offset = (page - 1) * page_size
+
         users, total = await self.user_repository.list_users(
-            limit=limit,
+            limit=page_size,
             offset=offset,
         )
 
-        items = [UserResponse.model_validate(user) for user in users]
+        total_pages = (total + page_size - 1) // page_size
 
-        return UserListResponse(
-            items=items,
-            total=total,
-            limit=limit,
-            offset=offset,
+        data = [UserResponse.model_validate(user) for user in users]
+
+        return PaginatedResponse(
+            message="Users retrieved successfully",
+            data=data,
+            pagination=PaginationMeta(
+                page=page,
+                page_size=page_size,
+                total=total,
+                total_pages=total_pages,
+            ),
         )
 
     async def update_user(

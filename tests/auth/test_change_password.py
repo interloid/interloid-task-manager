@@ -24,7 +24,7 @@ async def test_change_password_success(
     access_token = login_response.json()["data"]["access_token"]
 
     response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -52,7 +52,7 @@ async def test_old_password_fails_after_password_change(
     access_token = login_response.json()["data"]["access_token"]
 
     change_response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -90,7 +90,7 @@ async def test_new_password_works_after_password_change(
     access_token = login_response.json()["data"]["access_token"]
 
     change_response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -128,7 +128,7 @@ async def test_change_password_wrong_current_password_returns_401(
     access_token = login_response.json()["data"]["access_token"]
 
     response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -178,7 +178,7 @@ async def test_change_password_revokes_all_refresh_tokens(
     assert len(tokens_before) == 2
 
     response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -225,7 +225,7 @@ async def test_change_password_with_same_password_returns_422(
     access_token = login_response.json()["data"]["access_token"]
 
     response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -268,7 +268,7 @@ async def test_old_access_token_invalid_after_password_change(
     }
 
     change_password_response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers=headers,
         json={
             "current_password": "StrongPassword123!",
@@ -279,7 +279,7 @@ async def test_old_access_token_invalid_after_password_change(
     assert change_password_response.status_code == 200
 
     me_response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers=headers,
     )
 
@@ -308,7 +308,7 @@ async def test_new_access_token_valid_after_password_change(
     }
 
     change_password_response = await client.patch(
-        "/api/v1/auth/change-password",
+        "/api/v1/users/me/password",
         headers=old_headers,
         json={
             "current_password": "StrongPassword123!",
@@ -335,7 +335,7 @@ async def test_new_access_token_valid_after_password_change(
     }
 
     me_response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers=new_headers,
     )
 

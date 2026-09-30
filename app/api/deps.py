@@ -115,8 +115,8 @@ def get_task_list_query(
     due_from: Annotated[date | None, Query()] = None,
     due_to: Annotated[date | None, Query()] = None,
     search: Annotated[str | None, Query()] = None,
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     sort_by: Annotated[TaskSortBy, Query()] = TaskSortBy.CREATED_AT,
     order: Annotated[SortOrder, Query()] = SortOrder.DESC,
 ) -> TaskListQuery:
@@ -128,8 +128,8 @@ def get_task_list_query(
             due_from=due_from,
             due_to=due_to,
             search=search,
-            limit=limit,
-            offset=offset,
+            page=page,
+            page_size=page_size,
             sort_by=sort_by,
             order=order,
         )

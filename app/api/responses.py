@@ -39,6 +39,22 @@ INVALID_CURRENT_PASSWORD_RESPONSE: OpenAPIResponses = {
 }
 
 
+INVALID_EMAIL_OTP_RESPONSE: OpenAPIResponses = {
+    status.HTTP_400_BAD_REQUEST: {
+        "model": ErrorResponse,
+        "description": "Invalid or expired verification code",
+    },
+}
+
+
+EMAIL_ALREADY_VERIFIED_RESPONSE: OpenAPIResponses = {
+    status.HTTP_409_CONFLICT: {
+        "model": ErrorResponse,
+        "description": "Email is already verified",
+    },
+}
+
+
 EMAIL_ALREADY_EXISTS_RESPONSE: OpenAPIResponses = {
     status.HTTP_409_CONFLICT: {
         "model": ErrorResponse,

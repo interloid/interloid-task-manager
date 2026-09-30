@@ -7,11 +7,11 @@ from app.exceptions.task import TaskNotFoundException
 from app.models.task import Task
 from app.models.user import User
 from app.repositories.tasks import TaskRepository
-from app.schemas.task import (
+from app.schemas import (
+    PaginatedResponse,
     PaginationMeta,
     TaskCreateRequest,
     TaskListQuery,
-    TaskListResponse,
     TaskResponse,
     TaskUpdateRequest,
 )
@@ -44,13 +44,15 @@ class TaskService:
         *,
         current_user: User,
         query: TaskListQuery,
-    ) -> TaskListResponse:
+    ) -> PaginatedResponse[TaskResponse]:
         owner_id: UUID | None
 
         if current_user.role == RoleName.ADMIN:
             owner_id = query.owner_id
         else:
             owner_id = current_user.id
+
+        offset = (query.page - 1) * query.page_size
 
         tasks, total = await self.task_repository.get_tasks(
             owner_id=owner_id,
@@ -59,18 +61,24 @@ class TaskService:
             due_from=query.due_from,
             due_to=query.due_to,
             search=query.search,
-            limit=query.limit,
-            offset=query.offset,
+            limit=query.page_size,
+            offset=offset,
             sort_by=query.sort_by,
             order=query.order,
         )
 
-        return TaskListResponse(
-            items=[TaskResponse.model_validate(task) for task in tasks],
+        total_pages = (total + query.page_size - 1) // query.page_size
+
+        data = [TaskResponse.model_validate(task) for task in tasks]
+
+        return PaginatedResponse(
+            message="Tasks retrieved successfully",
+            data=data,
             pagination=PaginationMeta(
+                page=query.page,
+                page_size=query.page_size,
                 total=total,
-                limit=query.limit,
-                offset=query.offset,
+                total_pages=total_pages,
             ),
         )
 

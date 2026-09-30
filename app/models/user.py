@@ -54,6 +54,12 @@ class User(BaseModelMixin, Base):
         default=True,
     )
 
+    is_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+    )
+
     password_changed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,

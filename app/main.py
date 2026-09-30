@@ -69,11 +69,3 @@ app.include_router(
     api_router,
     prefix="/api/v1",
 )
-
-
-@app.get("/")
-async def root():
-    return {
-        "message": f"{settings.APP_NAME} is running",
-        "version": settings.APP_VERSION,
-    }

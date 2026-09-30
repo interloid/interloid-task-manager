@@ -18,6 +18,7 @@ from app.core.security import (
 )
 from app.exceptions.auth import (
     EmailAlreadyExistsException,
+    EmailNotVerifiedException,
     InvalidCredentialsException,
     InvalidCurrentPasswordException,
     InvalidRefreshTokenException,
@@ -26,6 +27,7 @@ from app.exceptions.auth import (
     SessionNotFoundException,
     UnauthorizedException,
 )
+from app.mail.base import Mailer
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
 from app.repositories.refresh_token import RefreshTokenRepository
@@ -39,6 +41,7 @@ from app.schemas.auth import (
     SessionResponse,
     UserResponse,
 )
+from app.services.email_verification import EmailVerificationService
 from app.utils.user_agent import parse_user_agent
 
 logger = logging.getLogger(__name__)
@@ -53,6 +56,7 @@ class AuthService:
     async def register(
         self,
         request: RegisterRequest,
+        mailer: Mailer,
     ) -> UserResponse:
         if await self.user_repository.email_exists(request.email):
             raise EmailAlreadyExistsException()
@@ -64,6 +68,7 @@ class AuthService:
             password_hash=hashed_password,
             first_name=request.first_name,
             last_name=request.last_name,
+            is_verified=False,
         )
 
         try:
@@ -71,6 +76,12 @@ class AuthService:
                 user = await self.user_repository.create(user)
         except IntegrityError as exc:
             raise EmailAlreadyExistsException() from exc
+
+        email_verification_service = EmailVerificationService(
+            self.session,
+        )
+
+        await email_verification_service.send_verification_otp(user, mailer)
 
         return UserResponse.model_validate(user)
 
@@ -103,6 +114,9 @@ class AuthService:
             )
 
             raise InvalidCredentialsException()
+
+        if not user.is_verified:
+            raise EmailNotVerifiedException()
 
         browser, os_name = parse_user_agent(
             user_agent,

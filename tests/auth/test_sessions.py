@@ -47,7 +47,6 @@ async def test_get_sessions_returns_current_session(
 
     assert body["success"] is True
     assert body["message"] == "Active sessions fetched successfully"
-    assert body["error"] is None
 
     assert body["data"]["total"] == 1
 
@@ -407,7 +406,7 @@ async def test_revoked_session_access_token_returns_401(
     assert revoke_response.status_code == 200
 
     me_response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers=headers,
     )
 

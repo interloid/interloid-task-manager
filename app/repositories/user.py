@@ -130,3 +130,11 @@ class UserRepository(BaseRepository[User]):
         )
 
         return list(result.scalars().all())
+
+    async def mark_email_verified(
+        self,
+        user: User,
+    ) -> None:
+        user.is_verified = True
+
+        await self.session.flush()

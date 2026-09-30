@@ -76,15 +76,15 @@ class TaskListQuery(BaseModel):
 
     search: str | None = None
 
-    limit: int = Field(
+    page: int = Field(
+        default=1,
+        ge=1,
+    )
+
+    page_size: int = Field(
         default=20,
         ge=1,
         le=100,
-    )
-
-    offset: int = Field(
-        default=0,
-        ge=0,
     )
 
     sort_by: TaskSortBy = TaskSortBy.CREATED_AT
@@ -100,14 +100,3 @@ class TaskListQuery(BaseModel):
             raise ValueError("due_from must be less than or equal to due_to")
 
         return self
-
-
-class PaginationMeta(BaseModel):
-    total: int
-    limit: int
-    offset: int
-
-
-class TaskListResponse(BaseModel):
-    items: list[TaskResponse]
-    pagination: PaginationMeta
