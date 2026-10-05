@@ -4,7 +4,7 @@ set -e
 
 DOCKER_USERNAME="amaldas12345"
 IMAGE_NAME="interloid-task-manager"
-TAG="v1.2.5"
+TAG="v1.2.6"
 
 FULL_IMAGE_NAME="${DOCKER_USERNAME}/${IMAGE_NAME}:${TAG}"
 LATEST_IMAGE_NAME="${DOCKER_USERNAME}/${IMAGE_NAME}:latest"

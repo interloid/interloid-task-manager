@@ -24,6 +24,13 @@ class PaginatedResponse(BaseModel, Generic[T]):
     pagination: PaginationMeta
 
 
+class CollectionResponse(BaseModel, Generic[T]):
+    success: Literal[True] = True
+    message: str
+    data: list[T]
+    total: int
+
+
 class APIResponse(BaseModel, Generic[T]):
     success: Literal[True] = True
     message: str

@@ -12,6 +12,7 @@ from app.api.responses import (
 )
 from app.db.dependencies import get_db
 from app.models.user import User
+from app.repositories.refresh_token import RefreshTokenRepository
 from app.repositories.user import UserRepository
 from app.schemas import APIResponse, PaginatedResponse, UserResponse, UserUpdateRequest
 from app.services.user import UserService
@@ -45,8 +46,13 @@ async def list_users(
     _: User = Depends(require_admin),
     session: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaginatedResponse[UserResponse]:
-    repository = UserRepository(session)
-    service = UserService(repository)
+    user_repository = UserRepository(session)
+    refresh_token_repository = RefreshTokenRepository(session)
+
+    service = UserService(
+        user_repository=user_repository,
+        refresh_token_repository=refresh_token_repository,
+    )
 
     return await service.list_users(
         page=page,
@@ -71,8 +77,13 @@ async def update_user(
     current_admin: User = Depends(require_admin),
     session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserResponse]:
-    repository = UserRepository(session)
-    service = UserService(repository)
+    user_repository = UserRepository(session)
+    refresh_token_repository = RefreshTokenRepository(session)
+
+    service = UserService(
+        user_repository=user_repository, 
+        refresh_token_repository=refresh_token_repository, 
+    )
 
     user = await service.update_user(
         id=id,

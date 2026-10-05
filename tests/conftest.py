@@ -85,7 +85,7 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(
         transport=transport,
         base_url="http://test",
-    ) as async_client:
+    ) as async_client:  
         yield async_client
 
 

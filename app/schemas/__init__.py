@@ -8,13 +8,13 @@ from app.schemas.auth import (
     RegisterRequest,
     ResendVerificationRequest,
     ResetPasswordRequest,
-    SessionListResponse,
     SessionResponse,
     UserResponse,
     VerifyEmailRequest,
 )
 from app.schemas.common import (
     APIResponse,
+    CollectionResponse,
     ErrorDetail,
     ErrorResponse,
     MessageResponse,
@@ -32,6 +32,7 @@ from app.schemas.user import UserUpdateRequest
 __all__ = [
     "APIResponse",
     "ChangePasswordRequest",
+    "CollectionResponse",
     "ErrorDetail",
     "ErrorResponse",
     "ForgotPasswordRequest",
@@ -45,7 +46,6 @@ __all__ = [
     "RegisterRequest",
     "ResendVerificationRequest",
     "ResetPasswordRequest",
-    "SessionListResponse",
     "SessionResponse",
     "TaskCreateRequest",
     "TaskListQuery",

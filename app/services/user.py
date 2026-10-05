@@ -7,6 +7,7 @@ from app.exceptions.user import (
     UserNotFoundException,
 )
 from app.models.user import User
+from app.repositories.refresh_token import RefreshTokenRepository
 from app.repositories.user import UserRepository
 from app.schemas import (
     PaginatedResponse,
@@ -17,8 +18,13 @@ from app.schemas import (
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository) -> None:
+    def __init__(
+            self, 
+            user_repository: UserRepository,
+            refresh_token_repository: RefreshTokenRepository,
+    ) -> None:
         self.user_repository = user_repository
+        self.refresh_token_repository = refresh_token_repository
 
     async def list_users(
         self,
@@ -53,7 +59,7 @@ class UserService:
         request: UserUpdateRequest,
         current_admin: User,
     ) -> UserResponse:
-        user = await self.user_repository.get_by_id(id)
+        user = await self.user_repository.get_by_id_for_update(id)
 
         if user is None:
             raise UserNotFoundException()
@@ -81,6 +87,11 @@ class UserService:
             user=user,
             role=request.role,
             is_active=request.is_active,
+        )
+
+        if request.is_active is False:
+            await self.refresh_token_repository.revoke_all_for_user(
+                user.id,
         )
 
         return UserResponse.model_validate(user)

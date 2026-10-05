@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.responses import (
     EMAIL_ALREADY_VERIFIED_RESPONSE,
     INVALID_EMAIL_OTP_RESPONSE,
+    TOO_MANY_REQUESTS_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
 )
 from app.db.dependencies import get_db
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/auth", tags=["Email Authentication"])
     responses={
         **INVALID_EMAIL_OTP_RESPONSE,
         **EMAIL_ALREADY_VERIFIED_RESPONSE,
-        **VALIDATION_ERROR_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,   
     },
 )
 async def verify_email(
@@ -58,6 +59,7 @@ async def verify_email(
     responses={
         **VALIDATION_ERROR_RESPONSE,
         **EMAIL_ALREADY_VERIFIED_RESPONSE,
+        **TOO_MANY_REQUESTS_RESPONSE,
     },
 )
 async def resend_verification(

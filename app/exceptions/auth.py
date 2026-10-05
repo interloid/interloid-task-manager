@@ -96,6 +96,19 @@ class LoginRateLimitExceededException(AppException):
             },
         )
 
+class PasswordResetRateLimitExceededException(AppException):
+    def __init__(
+        self,
+        retry_after: int,
+    ) -> None:
+        super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            message="Too many password reset requests",
+            code="PASSWORD_RESET_RATE_LIMIT_EXCEEDED",
+            headers={
+                "Retry-After": str(retry_after),
+            },
+        )
 
 class SessionNotFoundException(AppException):
     def __init__(self) -> None:
@@ -133,6 +146,20 @@ class EmailOtpResendCooldownException(AppException):
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             message="Please wait before requesting another verification code",
             code="EMAIL_OTP_RESEND_COOLDOWN",
+            headers={
+                "Retry-After": str(retry_after),
+            },
+        )
+
+class PasswordResetCooldownException(AppException):
+    def __init__(
+        self,
+        retry_after: int,
+    ) -> None:
+        super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            message="Please wait before requesting another password reset code",
+            code="PASSWORD_RESET_COOLDOWN",
             headers={
                 "Retry-After": str(retry_after),
             },

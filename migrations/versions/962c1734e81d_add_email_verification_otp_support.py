@@ -147,3 +147,8 @@ def downgrade() -> None:
     op.drop_table(
         "email_otps",
     )
+    sa.Enum(
+        "verify_email",
+        "reset_password",
+        name="email_otp_purpose",
+    ).drop(op.get_bind())

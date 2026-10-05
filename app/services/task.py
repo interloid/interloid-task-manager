@@ -24,7 +24,7 @@ class TaskService:
     async def create_task(
         self,
         request: TaskCreateRequest,
-        owner_id,
+        owner_id: UUID,
     ) -> TaskResponse:
         task = Task(
             owner_id=owner_id,

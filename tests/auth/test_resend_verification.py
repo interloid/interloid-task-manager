@@ -68,7 +68,10 @@ async def test_resend_verification_success(
         body = response.json()
 
         assert body["success"] is True
-        assert body["message"] == "If an account exists for this email, a verification code has been sent."
+        assert (
+            body["message"]
+            == "If an account exists for this email, a verification code has been sent."
+        )
 
         assert len(fake_mailer.sent_emails) == 2
 
@@ -236,7 +239,10 @@ async def test_resend_verification_unknown_email_returns_200(
         body = response.json()
 
         assert body["success"] is True
-        assert body["message"] == "If an account exists for this email, a verification code has been sent."
+        assert (
+            body["message"]
+            == "If an account exists for this email, a verification code has been sent."
+        )
 
         assert len(fake_mailer.sent_emails) == 0
 

@@ -103,11 +103,6 @@ class SessionResponse(BaseModel):
     is_current: bool
 
 
-class SessionListResponse(BaseModel):
-    items: list[SessionResponse]
-    total: int
-
-
 class VerifyEmailRequest(BaseModel):
     email: EmailStr
 

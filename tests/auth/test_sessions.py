@@ -48,9 +48,9 @@ async def test_get_sessions_returns_current_session(
     assert body["success"] is True
     assert body["message"] == "Active sessions fetched successfully"
 
-    assert body["data"]["total"] == 1
+    assert body["total"] == 1
 
-    sessions = body["data"]["items"]
+    sessions = body["data"]
 
     assert len(sessions) == 1
     assert sessions[0]["is_current"] is True
@@ -87,7 +87,7 @@ async def test_current_session_id_matches_access_token_sid(
 
     assert response.status_code == 200
 
-    sessions = response.json()["data"]["items"]
+    sessions = response.json()["data"]
 
     assert len(sessions) == 1
     assert sessions[0]["id"] == session_id
@@ -132,9 +132,9 @@ async def test_get_sessions_returns_multiple_active_sessions(
 
     body = response.json()
 
-    assert body["data"]["total"] == 2
+    assert body["total"] == 2
 
-    sessions = body["data"]["items"]
+    sessions = body["data"]
 
     assert len(sessions) == 2
 
@@ -194,9 +194,9 @@ async def test_get_sessions_excludes_revoked_sessions(
 
     body = response.json()
 
-    assert body["data"]["total"] == 1
-    assert len(body["data"]["items"]) == 1
-    assert body["data"]["items"][0]["is_current"] is True
+    assert body["total"] == 1
+    assert len(body["data"]) == 1
+    assert body["data"][0]["is_current"] is True
 
 
 @pytest.mark.anyio
@@ -242,9 +242,9 @@ async def test_get_sessions_excludes_expired_sessions(
 
     body = response.json()
 
-    assert body["data"]["total"] == 1
-    assert len(body["data"]["items"]) == 1
-    assert body["data"]["items"][0]["is_current"] is True
+    assert body["total"] == 1
+    assert len(body["data"]) == 1
+    assert body["data"][0]["is_current"] is True
 
 
 @pytest.mark.anyio
@@ -298,7 +298,7 @@ async def test_revoke_single_session(
 
     assert sessions_response.status_code == 200
 
-    sessions = sessions_response.json()["data"]["items"]
+    sessions = sessions_response.json()["data"]
 
     second_session = next(
         session for session in sessions if session["is_current"] is False
@@ -396,7 +396,7 @@ async def test_revoked_session_access_token_returns_401(
 
     assert sessions_response.status_code == 200
 
-    session_id = sessions_response.json()["data"]["items"][0]["id"]
+    session_id = sessions_response.json()["data"][0]["id"]
 
     revoke_response = await client.delete(
         f"/api/v1/auth/sessions/{session_id}",

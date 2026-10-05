@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     DB_PASSWORD: SecretStr
     DB_SSL: bool
 
+    REDIS_URL: str
+    REDIS_KEY_PREFIX: str
+
     EMAIL_OTP_EXPIRE_MINUTES: int = Field(
         default=5,
         ge=1,
@@ -43,6 +46,13 @@ class Settings(BaseSettings):
         ge=1,
         le=300,
     )
+
+    PASSWORD_RESET_OTP_RESEND_COOLDOWN_SECONDS: int = Field(
+        default=60,
+        ge=1,
+        le=300,
+    )
+
 
     SMTP_HOST: str
     SMTP_PORT: int = 587

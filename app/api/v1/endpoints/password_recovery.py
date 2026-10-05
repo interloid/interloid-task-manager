@@ -3,7 +3,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.responses import INVALID_EMAIL_OTP_RESPONSE, VALIDATION_ERROR_RESPONSE
+from app.api.responses import (
+    INVALID_EMAIL_OTP_RESPONSE,
+    TOO_MANY_REQUESTS_RESPONSE,
+    VALIDATION_ERROR_RESPONSE,
+)
 from app.db.dependencies import get_db
 from app.mail.base import Mailer
 from app.mail.dependencies import get_mailer
@@ -19,6 +23,7 @@ router = APIRouter(prefix="/auth", tags=["Password Recovery"])
     status_code=status.HTTP_200_OK,
     responses={
         **VALIDATION_ERROR_RESPONSE,
+        **TOO_MANY_REQUESTS_RESPONSE,
     },
 )
 async def forgot_password(

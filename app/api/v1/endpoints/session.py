@@ -12,7 +12,7 @@ from app.api.responses import (
 )
 from app.db.dependencies import get_db
 from app.models import User
-from app.schemas import APIResponse, MessageResponse, SessionListResponse
+from app.schemas import CollectionResponse, MessageResponse, SessionResponse
 from app.services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Session Management"])
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/auth", tags=["Session Management"])
 
 @router.get(
     "/sessions",
-    response_model=APIResponse[SessionListResponse],
+    response_model=CollectionResponse[SessionResponse],
     status_code=status.HTTP_200_OK,
     responses={
         **UNAUTHORIZED_RESPONSE,
@@ -39,7 +39,7 @@ async def get_sessions(
         AsyncSession,
         Depends(get_db, scope="function"),
     ],
-) -> APIResponse[SessionListResponse]:
+) -> CollectionResponse[SessionResponse]:
     service = AuthService(session)
 
     result = await service.get_sessions(
@@ -47,10 +47,7 @@ async def get_sessions(
         current_session_id=current_session_id,
     )
 
-    return APIResponse(
-        message="Active sessions fetched successfully",
-        data=result,
-    )
+    return result
 
 
 @router.delete(

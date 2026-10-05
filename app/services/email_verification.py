@@ -11,6 +11,7 @@ from app.exceptions.auth import (
     EmailOtpAttemptsExceededException,
     EmailOtpResendCooldownException,
     InvalidEmailOtpException,
+    PasswordResetCooldownException,
     PasswordReuseNotAllowedException,
 )
 from app.mail.base import Mailer
@@ -195,6 +196,25 @@ class EmailVerificationService:
 
         if user is None:
             return
+
+        latest_otp = await self.email_otp_repository.get_latest_for_update(
+            user_id=user.id,
+            purpose=EmailOtpPurpose.RESET_PASSWORD,
+        )
+
+        if latest_otp is not None:
+            elapsed_seconds = (
+                datetime.now(UTC) - latest_otp.created_at
+            ).total_seconds()
+
+            cooldown = settings.PASSWORD_RESET_OTP_RESEND_COOLDOWN_SECONDS
+
+            if elapsed_seconds < cooldown:
+                retry_after = ceil(cooldown - elapsed_seconds)
+
+                raise PasswordResetCooldownException(
+                    retry_after=retry_after,
+                )
 
         await self.email_otp_repository.invalidate_active(
             user_id=user.id,

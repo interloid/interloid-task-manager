@@ -32,12 +32,12 @@ from app.models.refresh_token import RefreshToken
 from app.models.user import User
 from app.repositories.refresh_token import RefreshTokenRepository
 from app.repositories.user import UserRepository
-from app.schemas.auth import (
+from app.schemas import (
     ChangePasswordRequest,
+    CollectionResponse,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
-    SessionListResponse,
     SessionResponse,
     UserResponse,
 )
@@ -115,7 +115,7 @@ class AuthService:
 
             raise InvalidCredentialsException()
 
-        if not user.is_verified:
+        if not user.is_verified: 
             raise EmailNotVerifiedException()
 
         browser, os_name = parse_user_agent(
@@ -292,7 +292,7 @@ class AuthService:
         *,
         user: User,
         current_session_id: UUID,
-    ) -> SessionListResponse:
+    ) -> CollectionResponse[SessionResponse]:
         sessions = await self.refresh_token_repository.get_active_sessions_for_user(
             user.id,
         )
@@ -309,8 +309,9 @@ class AuthService:
             for session in sessions
         ]
 
-        return SessionListResponse(
-            items=items,
+        return CollectionResponse(
+            message="Active sessions fetched successfully",
+            data=items,
             total=len(items),
         )
 

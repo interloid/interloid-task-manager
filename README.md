@@ -30,8 +30,8 @@ The project provides secure authentication, role-based authorization, refresh-to
 
 The application supports two roles:
 
-* `ADMIN`
-* `USER`
+* `admin`
+* `user`
 
 Authorization features include:
 
@@ -60,7 +60,6 @@ Task management supports:
 * Filter tasks by priority
 * Filter tasks by due-date range
 * Case-insensitive title search
-* Limit/offset pagination
 * Admin filtering by `owner_id`
 * Ownership-based access control
 
@@ -205,11 +204,35 @@ POST   /api/v1/auth/register
 POST   /api/v1/auth/login
 POST   /api/v1/auth/refresh
 POST   /api/v1/auth/logout
-POST   /api/v1/auth/logout-all
-GET    /api/v1/auth/me
-PATCH  /api/v1/auth/change-password
+```
+
+### Email Authentication
+
+```text
+POST  /api/v1/auth/verify-email
+POST  /api/v1/auth/resend-verification
 GET    /api/v1/auth/sessions
 DELETE  /api/v1/auth/sessions/{id}
+```
+
+### Password Recovery
+```text
+POST  /api/v1/auth/forget-password
+POST  /api/v1/auth/reset-password
+```
+
+### Session Management
+```text
+POST  /api/v1/auth/sessions
+POST  /api/v1/auth/sessions/{id}
+POST   /api/v1/auth/logout-all
+
+```
+
+### User Profile
+```text
+GET    /api/v1/users/me
+PATCH  /api/v1/users/me/password
 ```
 
 ### User Administration
@@ -240,8 +263,6 @@ The task-list endpoint supports:
 ?due_from=
 ?due_to=
 ?search=
-?limit=
-?offset=
 ```
 
 `owner_id` filtering is available to administrators. Normal users always receive only their own tasks.
@@ -249,8 +270,8 @@ The task-list endpoint supports:
 Pagination defaults:
 
 ```text
-limit=20
-offset=0
+page=1
+page_size=20
 ```
 
 The maximum allowed `limit` is:
@@ -625,141 +646,6 @@ uv run pre-commit run --all-files
 
 ---
 
-## Docker
-
-### Build and Push the Image
-
-The project includes a Docker build-and-push script:
-
-```text
-scripts/push-image.sh
-```
-
-The script builds the image using both a versioned tag and the `latest` tag and pushes both to Docker Hub.
-
-Current release:
-
-```text
-v1.2.3
-```
-
-Make the script executable:
-
-```bash
-chmod +x scripts/push-image.sh
-```
-
-This normally needs to be done only once. Git can preserve the executable permission.
-
-Run the script:
-
-```bash
-./scripts/push-image.sh
-```
-
-The script publishes:
-
-```text
-amaldas12345/interloid-task-manager:v1.2.3
-amaldas12345/interloid-task-manager:latest
-```
-
-### Build Manually
-
-```bash
-docker build \
-  -t interloid-task-manager:v1.2.3\
-  .
-```
-
-### Run Locally
-
-```bash
-docker run -d \
-  --name interloid-task-manager \
-  --restart unless-stopped \
-  --env-file .env \
-  -p 8000:8000 \
-  interloid-task-manager:v1.2.3
-```
-
-Check the running container:
-
-```bash
-docker ps
-```
-
-View application logs:
-
-```bash
-docker logs interloid-task-manager
-```
-
----
-
-## Docker Hub
-
-Versioned Docker tags are used so deployments can be identified and rolled back when necessary.
-
-Versioned image:
-
-```text
-amaldas12345/interloid-task-manager:v1.2.3
-```
-
-Latest image:
-
-```text
-amaldas12345/interloid-task-manager:latest
-```
-
-For deployments, prefer a specific version such as `v1.2.0` rather than relying only on `latest`.
-
----
-
-## Deployment
-
-The application is containerized using Docker and deployed on AWS EC2.
-
-Current release:
-
-```text
-v1.2.3
-```
-
-The deployed container exposes FastAPI through port `8000`.
-
-### Deployment Flow
-
-```text
-Source Code
-    ↓
-Code Quality Checks
-    ↓
-Automated Tests
-    ↓
-Docker Build
-    ↓
-Docker Hub
-    ↓
-AWS EC2
-    ↓
-Docker Pull
-    ↓
-Container
-    ↓
-FastAPI :8000
-```
-
-A deployment script on EC2 can pull and deploy a specific version:
-
-```bash
-./deploy.sh v1.2.3
-```
-
-Using versioned Docker images allows deployments to be identified and makes rollback to an earlier release possible when required.
-
----
 
 ## API Documentation
 
@@ -770,29 +656,6 @@ Local Swagger UI:
 ```text
 http://localhost:8000/docs
 ```
-
-The documentation describes success and error responses for the API endpoints, including applicable:
-
-```text
-200 OK
-201 Created
-204 No Content
-401 Unauthorized
-403 Forbidden
-404 Not Found
-409 Conflict
-422 Unprocessable Content
-503 Service Unavailable
-```
-
-Swagger UI can be used to test:
-
-* Authentication
-* User administration
-* Task management
-* Filtering and pagination
-* Health checks
-* Readiness checks
 
 ---
 

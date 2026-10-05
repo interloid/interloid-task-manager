@@ -2,13 +2,19 @@ import time
 from math import ceil
 
 from limits import RateLimitItemPerMinute
-from limits.aio.storage import MemoryStorage
+from limits.aio.storage import RedisStorage
 from limits.aio.strategies import MovingWindowRateLimiter
+
+from app.core.config import settings
 
 
 class LoginRateLimiter:
     def __init__(self) -> None:
-        self.storage = MemoryStorage()
+        self.storage = RedisStorage(
+            settings.REDIS_URL,
+            implementation="redispy",
+            key_prefix=settings.REDIS_KEY_PREFIX,
+        )
 
         self.limiter = MovingWindowRateLimiter(
             self.storage,
@@ -16,7 +22,7 @@ class LoginRateLimiter:
 
         self.limit = RateLimitItemPerMinute(
             amount=5,
-            multiples=2,
+            multiples=1,
             namespace="login_failures",
         )
 
