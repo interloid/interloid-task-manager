@@ -195,7 +195,7 @@ async def test_login_rate_limit_is_applied_per_email(
 async def test_login_rate_limit_is_applied_per_ip(
     client: AsyncClient,
 ) -> None:
-    for index in range(5):
+    for index in range(30):
         response = await client.post(
             "/api/v1/auth/login",
             json={
@@ -209,7 +209,7 @@ async def test_login_rate_limit_is_applied_per_ip(
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "another@example.com",
+            "email": "another@example.com", 
             "password": "WrongPassword123!",
         },
     )

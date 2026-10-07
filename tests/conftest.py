@@ -2,6 +2,8 @@ import os
 from collections.abc import AsyncGenerator
 
 import pytest
+from limits.aio.storage import MemoryStorage
+from limits.aio.strategies import MovingWindowRateLimiter
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
@@ -15,6 +17,8 @@ from app.core.config import settings
 from app.core.rate_limit import login_rate_limiter
 from app.core.security import hash_password
 from app.db.dependencies import get_db
+from app.mail.dependencies import get_mailer
+from app.mail.fake import FakeMailer
 from app.enums import RoleName
 from app.main import app
 from app.models.user import User
@@ -210,8 +214,22 @@ async def reset_login_rate_limiter() -> AsyncGenerator[
     None,
     None,
 ]:
+    login_rate_limiter.storage = MemoryStorage()
+
+    login_rate_limiter.limiter = MovingWindowRateLimiter(
+        login_rate_limiter.storage,
+    )
+
     await login_rate_limiter.reset()
 
     yield
 
     await login_rate_limiter.reset()
+
+@pytest.fixture(autouse=True)
+def override_mailer():
+    app.dependency_overrides[get_mailer] = lambda: FakeMailer()
+
+    yield
+
+    app.dependency_overrides.pop(get_mailer, None)

@@ -104,7 +104,7 @@ async def test_resend_verification_success(
         )
 
 
-async def test_resend_verification_within_cooldown_returns_429(
+async def test_resend_verification_within_cooldown_returns_200(
     client: AsyncClient,
 ) -> None:
     fake_mailer = FakeMailer()
@@ -132,18 +132,16 @@ async def test_resend_verification_within_cooldown_returns_429(
             },
         )
 
-        assert response.status_code == 429
+        assert response.status_code == 200
 
         body = response.json()
 
-        assert body["success"] is False
-        assert body["error"]["code"] == "EMAIL_OTP_RESEND_COOLDOWN"
-
-        assert "Retry-After" in response.headers
-
-        retry_after = int(response.headers["Retry-After"])
-
-        assert 1 <= retry_after <= 60
+        assert body["success"] is True
+        assert (
+            body["message"]
+            == "If an account exists for this email, "
+            "a verification code has been sent."
+        )
 
         assert len(fake_mailer.sent_emails) == 1
 
@@ -154,7 +152,7 @@ async def test_resend_verification_within_cooldown_returns_429(
         )
 
 
-async def test_resend_verification_already_verified_returns_409(
+async def test_resend_verification_already_verified_returns_200(
     client: AsyncClient,
 ) -> None:
     fake_mailer = FakeMailer()
@@ -203,13 +201,16 @@ async def test_resend_verification_already_verified_returns_409(
             },
         )
 
-        assert resend_response.status_code == 409
+        assert resend_response.status_code == 200
 
         body = resend_response.json()
 
-        assert body["success"] is False
-        assert body["error"]["code"] == "EMAIL_ALREADY_VERIFIED"
-
+        assert body["success"] is True
+        assert (
+            body["message"]
+            == "If an account exists for this email, "
+            "a verification code has been sent."
+        )
         assert len(fake_mailer.sent_emails) == 1
 
     finally:

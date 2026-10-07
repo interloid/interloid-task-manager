@@ -2,15 +2,18 @@ import time
 from math import ceil
 
 from limits import RateLimitItemPerMinute
-from limits.aio.storage import RedisStorage
+from limits.aio.storage import RedisStorage, MemoryStorage
 from limits.aio.strategies import MovingWindowRateLimiter
 
 from app.core.config import settings
 
 
 class LoginRateLimiter:
-    def __init__(self) -> None:
-        self.storage = RedisStorage(
+    def __init__(
+        self,
+        storage: RedisStorage | MemoryStorage | None = None, 
+    ) -> None:
+        self.storage = storage or RedisStorage(
             settings.REDIS_URL,
             implementation="redispy",
             key_prefix=settings.REDIS_KEY_PREFIX,
@@ -20,10 +23,16 @@ class LoginRateLimiter:
             self.storage,
         )
 
-        self.limit = RateLimitItemPerMinute(
+        self.email_limit = RateLimitItemPerMinute(
             amount=5,
             multiples=1,
-            namespace="login_failures",
+            namespace="login_email_failures",
+        )
+
+        self.ip_limit = RateLimitItemPerMinute(
+            amount=30,
+            multiples=1,
+            namespace="login_ip_failures",
         )
 
     @staticmethod
@@ -35,23 +44,35 @@ class LoginRateLimiter:
     async def get_retry_after(
         self,
         *,
-        client_ip: str,
+        client_ip: str | None,
         email: str,
     ) -> int | None:
         normalized_email = self.normalize_email(
             email,
         )
 
-        identifiers = (
-            ("ip", client_ip),
-            ("email", normalized_email),
-        )
+        identifiers: list[tuple[RateLimitItemPerMinute, str, str]] = [
+            (
+                self.email_limit,
+                "email", 
+                normalized_email,
+            ),
+        ]
+
+        if client_ip is not None:
+            identifiers.append(
+                (
+                    self.ip_limit,
+                    "ip", 
+                    client_ip
+                ),
+            )
 
         retry_after_values: list[int] = []
 
-        for scope, value in identifiers:
+        for limit, scope, value in identifiers:
             allowed = await self.limiter.test(
-                self.limit,
+                limit,
                 scope,
                 value,
             )
@@ -60,7 +81,7 @@ class LoginRateLimiter:
                 continue
 
             stats = await self.limiter.get_window_stats(
-                self.limit,
+                limit,
                 scope,
                 value,
             )
@@ -82,21 +103,22 @@ class LoginRateLimiter:
     async def record_failure(
         self,
         *,
-        client_ip: str,
+        client_ip: str | None,
         email: str,
     ) -> None:
         normalized_email = self.normalize_email(
             email,
         )
 
-        await self.limiter.hit(
-            self.limit,
-            "ip",
-            client_ip,
-        )
+        if client_ip is not None:
+            await self.limiter.hit(
+                self.ip_limit,
+                "ip",
+                client_ip,  
+            )
 
         await self.limiter.hit(
-            self.limit,
+            self.email_limit,
             "email",
             normalized_email,
         )

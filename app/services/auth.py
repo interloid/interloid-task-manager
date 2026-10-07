@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid6 import uuid7
 
 from app.core.config import settings
-from app.core.rate_limit import login_rate_limiter
+from app.core.rate_limit import login_rate_limiter, LoginRateLimiter
 from app.core.security import (
     DUMMY_PASSWORD_HASH,
     create_access_token,
@@ -48,10 +48,15 @@ logger = logging.getLogger(__name__)
 
 
 class AuthService:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+            self,
+            session: AsyncSession,
+            rate_limiter: LoginRateLimiter =login_rate_limiter,
+    ) -> None:
         self.session = session
         self.user_repository = UserRepository(session)
         self.refresh_token_repository = RefreshTokenRepository(session)
+        self.rate_limiter = rate_limiter
 
     async def register(
         self,
@@ -89,9 +94,9 @@ class AuthService:
         self,
         request: LoginRequest,
         user_agent: str | None = None,
-        client_ip: str = "unknown",
+        client_ip: str | None = None,
     ) -> LoginResponse:
-        retry_after = await login_rate_limiter.get_retry_after(
+        retry_after = await self.rate_limiter.get_retry_after(
             client_ip=client_ip,
             email=request.email,
         )
@@ -108,7 +113,7 @@ class AuthService:
         password_ok = verify_password(request.password, password_hash)
 
         if user is None or not password_ok or not user.is_active:
-            await login_rate_limiter.record_failure(
+            await self.rate_limiter.record_failure(
                 client_ip=client_ip,
                 email=request.email,
             )

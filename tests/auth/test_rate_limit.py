@@ -100,7 +100,7 @@ async def test_login_rate_limit_is_applied_per_ip(
 ) -> None:
     client, _ = client_with_ip
 
-    for index in range(5):
+    for index in range(30):
         response = await client.post(
             "/api/v1/auth/login",
             json={

@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from math import ceil
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,9 +8,7 @@ from app.enums.email_otp import EmailOtpPurpose
 from app.exceptions.auth import (
     EmailAlreadyVerifiedException,
     EmailOtpAttemptsExceededException,
-    EmailOtpResendCooldownException,
     InvalidEmailOtpException,
-    PasswordResetCooldownException,
     PasswordReuseNotAllowedException,
 )
 from app.mail.base import Mailer
@@ -139,9 +136,7 @@ class EmailVerificationService:
             email_otp,
         )
 
-        user.is_verified = True
-
-        await self.session.flush()
+        await self.user_repository.mark_email_verified(user)
 
     async def resend_verification_otp(
         self,
@@ -151,11 +146,8 @@ class EmailVerificationService:
     ) -> None:
         user = await self.user_repository.get_by_email(email)
 
-        if user is None:
+        if user is None or user.is_verified:
             return
-
-        if user.is_verified:
-            raise EmailAlreadyVerifiedException()
 
         latest_otp = await self.email_otp_repository.get_latest_for_update(
             user_id=user.id,
@@ -170,11 +162,7 @@ class EmailVerificationService:
             cooldown = settings.EMAIL_OTP_RESEND_COOLDOWN_SECONDS
 
             if elapsed_seconds < cooldown:
-                retry_after = ceil(cooldown - elapsed_seconds)
-
-                raise EmailOtpResendCooldownException(
-                    retry_after=retry_after,
-                )
+                return
 
         await self.email_otp_repository.invalidate_active(
             user_id=user.id,
@@ -210,11 +198,7 @@ class EmailVerificationService:
             cooldown = settings.PASSWORD_RESET_OTP_RESEND_COOLDOWN_SECONDS
 
             if elapsed_seconds < cooldown:
-                retry_after = ceil(cooldown - elapsed_seconds)
-
-                raise PasswordResetCooldownException(
-                    retry_after=retry_after,
-                )
+                return
 
         await self.email_otp_repository.invalidate_active(
             user_id=user.id,
@@ -323,6 +307,8 @@ class EmailVerificationService:
             new_password_hash,
         )
 
+        await self.user_repository.mark_email_verified(user)
+        
         await self.email_otp_repository.mark_used(
             email_otp,
         )

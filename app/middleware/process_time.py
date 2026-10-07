@@ -10,8 +10,8 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
 
-        process_time = time.perf_counter() - start_time
+        process_time = (time.perf_counter() - start_time) * 1000
 
-        response.headers["X-Process-Time"] = f"{process_time:.6f}"
+        response.headers["X-Process-Time"] = f"{process_time:.2f} ms"
 
         return response

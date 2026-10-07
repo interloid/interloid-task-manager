@@ -223,8 +223,8 @@ POST  /api/v1/auth/reset-password
 
 ### Session Management
 ```text
-POST  /api/v1/auth/sessions
-POST  /api/v1/auth/sessions/{id}
+GET  /api/v1/auth/sessions
+DELETE  /api/v1/auth/sessions/{id}
 POST   /api/v1/auth/logout-all
 
 ```

@@ -711,8 +711,6 @@ async def test_normal_user_cannot_filter_tasks_by_another_owner(
 
     data = body["data"]
 
-    data = body["data"]
-
     assert all(task["owner_id"] == str(test_user.id) for task in data)
 
 

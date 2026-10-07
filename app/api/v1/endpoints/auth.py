@@ -76,7 +76,7 @@ async def login(
     )
 
     client_ip = (
-        http_request.client.host if http_request.client is not None else "unknown"
+        http_request.client.host if http_request.client is not None else None
     )
 
     tokens = await service.login(
