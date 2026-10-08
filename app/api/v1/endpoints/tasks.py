@@ -12,11 +12,12 @@ from app.api.responses import (
 )
 from app.db.dependencies import get_db
 from app.models.user import User
-from app.schemas.common import APIResponse
-from app.schemas.task import (
+from app.schemas import (
+    APIResponse,
+    MessageResponse,
+    PaginatedResponse,
     TaskCreateRequest,
     TaskListQuery,
-    TaskListResponse,
     TaskResponse,
     TaskUpdateRequest,
 )
@@ -57,7 +58,7 @@ async def create_task(
 
 @router.get(
     "",
-    response_model=APIResponse[TaskListResponse],
+    response_model=PaginatedResponse[TaskResponse],
     status_code=status.HTTP_200_OK,
     responses={
         **UNAUTHORIZED_RESPONSE,
@@ -77,17 +78,12 @@ async def get_tasks(
         AsyncSession,
         Depends(get_db, scope="function"),
     ],
-) -> APIResponse[TaskListResponse]:
+) -> PaginatedResponse[TaskResponse]:
     service = TaskService(db)
 
-    result = await service.get_tasks(
+    return await service.get_tasks(
         current_user=current_user,
         query=query,
-    )
-
-    return APIResponse(
-        message="Tasks fetched successfully",
-        data=result,
     )
 
 
@@ -151,7 +147,7 @@ async def update_task(
 
 @router.delete(
     "/{id}",
-    response_model=APIResponse[None],
+    response_model=MessageResponse,
     status_code=status.HTTP_200_OK,
     responses={
         **UNAUTHORIZED_RESPONSE,
@@ -163,7 +159,7 @@ async def delete_task(
     id: UUID,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db, scope="function"),
-) -> APIResponse[None]:
+) -> MessageResponse:
     service = TaskService(db)
 
     await service.delete_task(
@@ -171,6 +167,6 @@ async def delete_task(
         current_user=current_user,
     )
 
-    return APIResponse(
+    return MessageResponse(
         message="Task deleted successfully",
     )

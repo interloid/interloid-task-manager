@@ -1,26 +1,26 @@
-from fastapi import APIRouter, Depends, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user
 from app.api.responses import (
     EMAIL_ALREADY_EXISTS_RESPONSE,
     INVALID_CREDENTIALS_RESPONSE,
-    INVALID_CURRENT_PASSWORD_RESPONSE,
     INVALID_REFRESH_TOKEN_RESPONSE,
-    UNAUTHORIZED_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
 )
 from app.db.dependencies import get_db
-from app.models.user import User
-from app.schemas.auth import (
-    ChangePasswordRequest,
+from app.mail.base import Mailer
+from app.mail.dependencies import get_mailer
+from app.schemas import (
+    APIResponse,
     LoginRequest,
     LoginResponse,
+    MessageResponse,
     RefreshRequest,
     RegisterRequest,
     UserResponse,
 )
-from app.schemas.common import APIResponse
 from app.services.auth import AuthService
 
 router = APIRouter(
@@ -40,14 +40,17 @@ router = APIRouter(
 )
 async def register(
     request: RegisterRequest,
+    mailer: Annotated[Mailer, Depends(get_mailer)],
     session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserResponse]:
-    service = AuthService(session)
+    service = AuthService(
+        session,
+    )
 
-    user = await service.register(request)
+    user = await service.register(request, mailer)
 
     return APIResponse(
-        message="User registered successfully",
+        message=("User registered successfully. Verification code sent to email."),
         data=user,
     )
 
@@ -63,11 +66,24 @@ async def register(
 )
 async def login(
     request: LoginRequest,
+    http_request: Request,
     session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[LoginResponse]:
     service = AuthService(session)
 
-    tokens = await service.login(request)
+    user_agent = http_request.headers.get(
+        "user-agent",
+    )
+
+    client_ip = (
+        http_request.client.host if http_request.client is not None else None
+    )
+
+    tokens = await service.login(
+        request,
+        user_agent=user_agent,
+        client_ip=client_ip,
+    )
 
     return APIResponse(
         message="Login successful",
@@ -100,7 +116,7 @@ async def refresh_token(
 
 @router.post(
     "/logout",
-    response_model=APIResponse[None],
+    response_model=MessageResponse,
     status_code=status.HTTP_200_OK,
     responses={
         **VALIDATION_ERROR_RESPONSE,
@@ -109,56 +125,13 @@ async def refresh_token(
 async def logout(
     request: RefreshRequest,
     session: AsyncSession = Depends(get_db, scope="function"),
-) -> APIResponse[None]:
+) -> MessageResponse:
     service = AuthService(session)
 
     await service.logout(
         request.refresh_token,
     )
 
-    return APIResponse(
+    return MessageResponse(
         message="Logged out successfully",
-    )
-
-
-@router.get(
-    "/me",
-    response_model=APIResponse[UserResponse],
-    status_code=status.HTTP_200_OK,
-    responses={
-        **UNAUTHORIZED_RESPONSE,
-    },
-)
-async def get_me(
-    current_user: User = Depends(get_current_user),
-) -> APIResponse[UserResponse]:
-    user = UserResponse.model_validate(current_user)
-    return APIResponse(
-        message="Current user retrieved successfully",
-        data=user,
-    )
-
-
-@router.patch(
-    "/change-password",
-    response_model=APIResponse[None],
-    status_code=status.HTTP_200_OK,
-    responses={
-        **INVALID_CURRENT_PASSWORD_RESPONSE,
-        **VALIDATION_ERROR_RESPONSE,
-    },
-)
-async def change_password(
-    request: ChangePasswordRequest,
-    current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db, scope="function"),
-) -> APIResponse[None]:
-    service = AuthService(session)
-    await service.change_password(
-        current_user,
-        request,
-    )
-
-    return APIResponse(
-        message="password changed successfully",
     )

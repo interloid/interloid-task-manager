@@ -49,6 +49,7 @@ class UserResponse(BaseModel):
     last_name: str
     role: RoleName
     is_active: bool
+    is_verified: bool
     created_at: datetime
 
 
@@ -85,6 +86,50 @@ class ChangePasswordRequest(BaseModel):
         min_length=1,
         max_length=128,
     )
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, value: str) -> str:
+        return validate_password_strength(value)
+
+
+class SessionResponse(BaseModel):
+    id: UUID
+    browser: str | None
+    os: str | None
+    created_at: datetime
+    expires_at: datetime
+    is_current: bool
+
+
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+
+    otp: str = Field(
+        min_length=6,
+        max_length=6,
+        pattern=r"^\d{6}$",
+    )
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+
+    otp: str = Field(
+        min_length=6,
+        max_length=6,
+        pattern=r"^\d{6}$",
+    )
+
     new_password: str = Field(min_length=8, max_length=128)
 
     @field_validator("new_password")

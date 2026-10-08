@@ -57,7 +57,6 @@ async def test_user_can_update_own_task(
 
     assert body["success"] is True
     assert body["message"] == "Task updated successfully"
-    assert body["error"] is None
 
     task = body["data"]
 
@@ -109,15 +108,14 @@ async def test_update_task_returns_404_for_unknown_task(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
-    assert body["error"]["details"] is None
 
 
 @pytest.mark.anyio
 async def test_user_cannot_update_another_users_task(
     client: AsyncClient,
     test_user: User,
+    second_user: User,
 ) -> None:
     login_response = await client.post(
         "/api/v1/auth/login",
@@ -135,22 +133,10 @@ async def test_user_cannot_update_another_users_task(
         "Authorization": f"Bearer {user_token}",
     }
 
-    register_response = await client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "patchseconduser@example.com",
-            "password": "Test1234",
-            "first_name": "Second",
-            "last_name": "User",
-        },
-    )
-
-    assert register_response.status_code == 201
-
     second_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "patchseconduser@example.com",
+            "email": second_user.email,
             "password": "Test1234",
         },
     )
@@ -193,7 +179,6 @@ async def test_user_cannot_update_another_users_task(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
@@ -266,7 +251,6 @@ async def test_admin_can_update_another_users_task(
 
     assert body["success"] is True
     assert body["message"] == "Task updated successfully"
-    assert body["error"] is None
 
     task = body["data"]
 
@@ -327,7 +311,6 @@ async def test_update_task_rejects_invalid_status(
 
     assert body["success"] is False
     assert body["message"] == "Validation failed"
-    assert body["data"] is None
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
 
@@ -382,7 +365,6 @@ async def test_update_task_rejects_invalid_priority(
 
     assert body["success"] is False
     assert body["message"] == "Validation failed"
-    assert body["data"] is None
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
 
@@ -437,7 +419,6 @@ async def test_update_task_with_null_title_returns_422(
 
     assert body["success"] is False
     assert body["message"] == "Validation failed"
-    assert body["data"] is None
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
     assert "title cannot be null" in str(body["error"]["details"])
@@ -494,7 +475,6 @@ async def test_update_task_with_null_status_returns_422(
 
     assert body["success"] is False
     assert body["message"] == "Validation failed"
-    assert body["data"] is None
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
     assert "status cannot be null" in str(body["error"]["details"])
@@ -551,7 +531,6 @@ async def test_update_task_with_null_priority_returns_422(
 
     assert body["success"] is False
     assert body["message"] == "Validation failed"
-    assert body["data"] is None
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
     assert "priority cannot be null" in str(body["error"]["details"])

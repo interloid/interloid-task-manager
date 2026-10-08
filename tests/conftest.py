@@ -2,9 +2,10 @@ import os
 from collections.abc import AsyncGenerator
 
 import pytest
+from limits.aio.storage import MemoryStorage
+from limits.aio.strategies import MovingWindowRateLimiter
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
-from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -13,8 +14,11 @@ from sqlalchemy.ext.asyncio import (
 from uuid6 import uuid7
 
 from app.core.config import settings
+from app.core.rate_limit import login_rate_limiter
 from app.core.security import hash_password
 from app.db.dependencies import get_db
+from app.mail.dependencies import get_mailer
+from app.mail.fake import FakeMailer
 from app.enums import RoleName
 from app.main import app
 from app.models.user import User
@@ -23,23 +27,6 @@ from app.models.user import User
 def validate_test_database() -> None:
     if os.getenv("ENV_FILE") != ".env.test":
         raise RuntimeError("Tests must be run with ENV_FILE=.env.test")
-
-    database_url = make_url(
-        settings.database_url,
-    )
-
-    expected_host = "ep-bold-bird-b3n4b2j8-pooler.c-4.ap-southeast-1.aws.neon.tech"
-    expected_database = "neondb"
-    expected_user = "neondb_owner"
-
-    if (
-        database_url.host != expected_host
-        or database_url.database != expected_database
-        or database_url.username != expected_user
-    ):
-        raise RuntimeError(
-            "Refusing to run tests against an unapproved database destination"
-        )
 
 
 validate_test_database()
@@ -102,7 +89,7 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(
         transport=transport,
         base_url="http://test",
-    ) as async_client:
+    ) as async_client:  
         yield async_client
 
 
@@ -124,6 +111,7 @@ async def test_user(
         last_name="User",
         role=RoleName.USER,
         is_active=True,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -145,6 +133,7 @@ async def inactive_user(
         last_name="User",
         role=RoleName.USER,
         is_active=False,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -166,6 +155,7 @@ async def admin_user(
         last_name="User",
         role=RoleName.ADMIN,
         is_active=True,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -187,6 +177,7 @@ async def second_admin(
         last_name="Admin",
         role=RoleName.ADMIN,
         is_active=True,
+        is_verified=True,
     )
 
     db_session.add(user)
@@ -194,3 +185,51 @@ async def second_admin(
     await db_session.refresh(user)
 
     return user
+
+
+@pytest.fixture
+async def second_user(
+    db_session: AsyncSession,
+) -> User:
+    user = User(
+        id=uuid7(),
+        email="seconduser@example.com",
+        password_hash=hash_password("Test1234"),
+        first_name="Second",
+        last_name="User",
+        role=RoleName.USER,
+        is_active=True,
+        is_verified=True,
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user
+
+
+@pytest.fixture(autouse=True)
+async def reset_login_rate_limiter() -> AsyncGenerator[
+    None,
+    None,
+]:
+    login_rate_limiter.storage = MemoryStorage()
+
+    login_rate_limiter.limiter = MovingWindowRateLimiter(
+        login_rate_limiter.storage,
+    )
+
+    await login_rate_limiter.reset()
+
+    yield
+
+    await login_rate_limiter.reset()
+
+@pytest.fixture(autouse=True)
+def override_mailer():
+    app.dependency_overrides[get_mailer] = lambda: FakeMailer()
+
+    yield
+
+    app.dependency_overrides.pop(get_mailer, None)

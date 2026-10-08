@@ -1,10 +1,10 @@
 from datetime import date
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.enums.task import TaskPriority, TaskStatus
+from app.enums.task import SortOrder, TaskPriority, TaskSortBy, TaskStatus
 from app.models.task import Task
 from app.repositories.base import BaseRepository
 
@@ -24,6 +24,8 @@ class TaskRepository(BaseRepository[Task]):
         search: str | None = None,
         limit: int = 20,
         offset: int = 0,
+        sort_by: TaskSortBy = TaskSortBy.CREATED_AT,
+        order: SortOrder = SortOrder.DESC,
     ) -> tuple[list[Task], int]:
         filters = []
 
@@ -50,11 +52,35 @@ class TaskRepository(BaseRepository[Task]):
         total_result = await self.session.execute(count_stmt)
         total = total_result.scalar_one()
 
+        if sort_by == TaskSortBy.PRIORITY:
+            priority_order = case(
+                (Task.priority == TaskPriority.LOW, 1),
+                (Task.priority == TaskPriority.MEDIUM, 2),
+                (Task.priority == TaskPriority.HIGH, 3),
+            )
+
+            if order == SortOrder.ASC:
+                order_clause = priority_order.asc()
+            else:
+                order_clause = priority_order.desc()
+
+        elif sort_by == TaskSortBy.DUE_DATE:
+            if order == SortOrder.ASC:
+                order_clause = Task.due_date.asc().nulls_last()
+            else:
+                order_clause = Task.due_date.desc().nulls_last()
+
+        else:
+            if order == SortOrder.ASC:
+                order_clause = Task.created_at.asc()
+            else:
+                order_clause = Task.created_at.desc()
+
         stmt = (
             select(Task)
             .where(*filters)
             .order_by(
-                Task.created_at.desc(),
+                order_clause,
                 Task.id.desc(),
             )
             .limit(limit)

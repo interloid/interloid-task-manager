@@ -11,3 +11,14 @@ class TaskPriority(StrEnum):
     LOW = "Low"
     MEDIUM = "Medium"
     HIGH = "High"
+
+
+class TaskSortBy(StrEnum):
+    DUE_DATE = "due_date"
+    PRIORITY = "priority"
+    CREATED_AT = "created_at"
+
+
+class SortOrder(StrEnum):
+    ASC = "asc"
+    DESC = "desc"

@@ -32,10 +32,33 @@ class RefreshToken(BaseModelMixin, Base):
         nullable=True,
     )
 
+    browser: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    os: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    family_id: Mapped[uuid.UUID] = mapped_column(
+        nullable=False,
+        index=True,
+    )
+
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+    )
+
+    replaced_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey(
+            "refresh_tokens.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
     )
 
     user: Mapped["User"] = relationship(

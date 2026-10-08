@@ -22,7 +22,7 @@ async def test_me_returns_current_user(
     access_token = login_response.json()["data"]["access_token"]
 
     response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers={
             "Authorization": f"Bearer {access_token}",
         },
@@ -44,7 +44,7 @@ async def test_me_without_token_returns_401(
     client: AsyncClient,
 ) -> None:
     response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
     )
 
     assert response.status_code == 401
@@ -61,7 +61,7 @@ async def test_me_with_invalid_token_returns_401(
     client: AsyncClient,
 ) -> None:
     response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers={
             "Authorization": "Bearer invalid-token",
         },
@@ -100,7 +100,7 @@ async def test_me_rejects_deactivated_user(
     await db_session.commit()
 
     response = await client.get(
-        "/api/v1/auth/me",
+        "/api/v1/users/me",
         headers={
             "Authorization": f"Bearer {access_token}",
         },

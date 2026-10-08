@@ -9,15 +9,21 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.config import settings
 
-ssl_context = ssl.create_default_context()
+connect_args: dict[str, object] = {}
+
+if settings.DB_SSL:
+    ssl_context = ssl.create_default_context()
+    connect_args["ssl"] = ssl_context
+
 
 engine = create_async_engine(
     settings.database_url,
     echo=settings.DEBUG,
-    connect_args={
-        "ssl": ssl_context,
-    },
+    connect_args=connect_args,
+    pool_pre_ping=True,
 )
+
+
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -28,4 +34,6 @@ AsyncSessionLocal = async_sessionmaker(
 
 async def check_database_connection() -> None:
     async with engine.begin() as connection:
-        await connection.execute(text("SELECT 1"))
+        await connection.execute(
+            text("SELECT 1"),
+        )

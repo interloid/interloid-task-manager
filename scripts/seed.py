@@ -29,6 +29,7 @@ async def seed() -> None:
                 password_hash=hash_password(ADMIN["password"]),
                 role=RoleName.ADMIN,
                 is_active=True,
+                is_verified=True,
             )
 
             session.add(admin)
@@ -52,6 +53,7 @@ async def seed() -> None:
                     password_hash=hash_password(user_data["password"]),
                     role=RoleName.USER,
                     is_active=True,
+                    is_verified=True,
                 )
 
                 session.add(user)

@@ -24,6 +24,47 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: SecretStr
+    DB_SSL: bool
+
+    REDIS_URL: str
+    REDIS_KEY_PREFIX: str
+
+    EMAIL_OTP_EXPIRE_MINUTES: int = Field(
+        default=5,
+        ge=1,
+        le=30,
+    )
+
+    EMAIL_OTP_MAX_ATTEMPTS: int = Field(
+        default=5,
+        ge=1,
+        le=10,
+    )
+
+    EMAIL_OTP_RESEND_COOLDOWN_SECONDS: int = Field(
+        default=60,
+        ge=1,
+        le=300,
+    )
+
+    PASSWORD_RESET_OTP_RESEND_COOLDOWN_SECONDS: int = Field(
+        default=60,
+        ge=1,
+        le=300,
+    )
+
+
+    SMTP_HOST: str
+    SMTP_PORT: int = 587
+
+    SMTP_USERNAME: str
+    SMTP_PASSWORD: SecretStr
+
+    SMTP_FROM_EMAIL: str
+    SMTP_FROM_NAME: str = "Interloid Task Manager"
+    SMTP_USE_TLS: bool = True
+
+    OTP_SECRET_KEY: SecretStr
 
     JWT_SECRET_KEY: SecretStr
     JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"

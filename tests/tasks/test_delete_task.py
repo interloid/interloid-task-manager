@@ -52,8 +52,6 @@ async def test_user_can_delete_own_task(
 
     assert body["success"] is True
     assert body["message"] == "Task deleted successfully"
-    assert body["data"] is None
-    assert body["error"] is None
 
 
 @pytest.mark.anyio
@@ -111,7 +109,6 @@ async def test_deleted_task_returns_404(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
@@ -119,6 +116,7 @@ async def test_deleted_task_returns_404(
 async def test_user_cannot_delete_another_users_task(
     client: AsyncClient,
     test_user: User,
+    second_user: User,
 ) -> None:
     login_response = await client.post(
         "/api/v1/auth/login",
@@ -136,22 +134,10 @@ async def test_user_cannot_delete_another_users_task(
         "Authorization": f"Bearer {user_token}",
     }
 
-    register_response = await client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "deleteseconduser@example.com",
-            "password": "Test1234",
-            "first_name": "Second",
-            "last_name": "User",
-        },
-    )
-
-    assert register_response.status_code == 201
-
     second_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "deleteseconduser@example.com",
+            "email": second_user.email,
             "password": "Test1234",
         },
     )
@@ -191,7 +177,6 @@ async def test_user_cannot_delete_another_users_task(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
@@ -260,8 +245,6 @@ async def test_admin_can_delete_another_users_task(
 
     assert body["success"] is True
     assert body["message"] == "Task deleted successfully"
-    assert body["data"] is None
-    assert body["error"] is None
 
 
 @pytest.mark.anyio
@@ -298,6 +281,4 @@ async def test_delete_task_returns_404_for_unknown_task(
 
     assert body["success"] is False
     assert body["message"] == "Task not found"
-    assert body["data"] is None
     assert body["error"]["code"] == "TASK_NOT_FOUND"
-    assert body["error"]["details"] is None

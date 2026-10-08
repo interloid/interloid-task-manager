@@ -33,6 +33,7 @@ def verify_password(
 
 def create_access_token(
     subject: str,
+    session_id: str,
 ) -> str:
     now = datetime.now(UTC)
     expires_at = now + timedelta(
@@ -42,10 +43,11 @@ def create_access_token(
     payload: dict[str, Any] = {
         "sub": subject,
         "exp": expires_at,
-        "iat": now,
+        "iat": now.timestamp(),
         "jti": str(uuid7()),
         "iss": settings.APP_NAME,
         "type": TokenType.ACCESS.value,
+        "sid": session_id,
     }
 
     return jwt.encode(
@@ -79,6 +81,7 @@ def decode_token(token: str) -> dict[str, Any]:
                 "jti",
                 "iss",
                 "type",
+                "sid",
             ],
         },
     )

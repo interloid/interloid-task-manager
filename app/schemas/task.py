@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.enums.task import TaskPriority, TaskStatus
+from app.enums.task import SortOrder, TaskPriority, TaskSortBy, TaskStatus
 
 
 class TaskCreateRequest(BaseModel):
@@ -14,7 +14,7 @@ class TaskCreateRequest(BaseModel):
     description: str | None = None
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
-    due_date: date | None
+    due_date: date | None = None
 
     @field_validator("title", mode="before")
     @classmethod
@@ -76,16 +76,19 @@ class TaskListQuery(BaseModel):
 
     search: str | None = None
 
-    limit: int = Field(
+    page: int = Field(
+        default=1,
+        ge=1,
+    )
+
+    page_size: int = Field(
         default=20,
         ge=1,
         le=100,
     )
 
-    offset: int = Field(
-        default=0,
-        ge=0,
-    )
+    sort_by: TaskSortBy = TaskSortBy.CREATED_AT
+    order: SortOrder = SortOrder.DESC
 
     @model_validator(mode="after")
     def validate_due_date_range(self) -> "TaskListQuery":
@@ -97,14 +100,3 @@ class TaskListQuery(BaseModel):
             raise ValueError("due_from must be less than or equal to due_to")
 
         return self
-
-
-class PaginationMeta(BaseModel):
-    total: int
-    limit: int
-    offset: int
-
-
-class TaskListResponse(BaseModel):
-    items: list[TaskResponse]
-    pagination: PaginationMeta
