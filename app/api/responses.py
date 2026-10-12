@@ -86,7 +86,7 @@ VALIDATION_ERROR_RESPONSE: OpenAPIResponses = {
     },
 }
 
-TOO_MANY_REQUESTS_RESPONSE: OpenAPIResponses= {
+TOO_MANY_REQUESTS_RESPONSE: OpenAPIResponses = {
     status.HTTP_429_TOO_MANY_REQUESTS: {
         "model": ErrorResponse,
         "description": "Too many requests",

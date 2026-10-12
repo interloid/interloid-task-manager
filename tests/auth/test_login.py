@@ -209,7 +209,7 @@ async def test_login_rate_limit_is_applied_per_ip(
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "another@example.com", 
+            "email": "another@example.com",
             "password": "WrongPassword123!",
         },
     )

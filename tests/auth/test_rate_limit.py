@@ -149,5 +149,3 @@ async def test_login_rate_limit_retry_after_header_is_positive(
     retry_after = int(response.headers["Retry-After"])
 
     assert retry_after > 0
-
-

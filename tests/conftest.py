@@ -2,9 +2,9 @@ import os
 from collections.abc import AsyncGenerator
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from limits.aio.storage import MemoryStorage
 from limits.aio.strategies import MovingWindowRateLimiter
-from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -17,9 +17,9 @@ from app.core.config import settings
 from app.core.rate_limit import login_rate_limiter
 from app.core.security import hash_password
 from app.db.dependencies import get_db
+from app.enums import RoleName
 from app.mail.dependencies import get_mailer
 from app.mail.fake import FakeMailer
-from app.enums import RoleName
 from app.main import app
 from app.models.user import User
 
@@ -89,7 +89,7 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(
         transport=transport,
         base_url="http://test",
-    ) as async_client:  
+    ) as async_client:
         yield async_client
 
 
@@ -225,6 +225,7 @@ async def reset_login_rate_limiter() -> AsyncGenerator[
     yield
 
     await login_rate_limiter.reset()
+
 
 @pytest.fixture(autouse=True)
 def override_mailer():

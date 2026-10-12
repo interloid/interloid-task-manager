@@ -29,7 +29,7 @@ router = APIRouter(prefix="/auth", tags=["Email Authentication"])
     responses={
         **INVALID_EMAIL_OTP_RESPONSE,
         **EMAIL_ALREADY_VERIFIED_RESPONSE,
-        **VALIDATION_ERROR_RESPONSE,   
+        **VALIDATION_ERROR_RESPONSE,
     },
 )
 async def verify_email(

@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.v1.api import api_router
 from app.core.config import settings
@@ -38,6 +39,14 @@ app = FastAPI(
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SECRET_KEY.get_secret_value(),
+    same_site="lax",
+    https_only=not settings.DEBUG,
+)
+
 app.add_exception_handler(
     AppException,
     app_exception_handler,
@@ -69,4 +78,3 @@ app.include_router(
     api_router,
     prefix="/api/v1",
 )
-

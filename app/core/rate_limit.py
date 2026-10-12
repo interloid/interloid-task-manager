@@ -2,7 +2,7 @@ import time
 from math import ceil
 
 from limits import RateLimitItemPerMinute
-from limits.aio.storage import RedisStorage, MemoryStorage
+from limits.aio.storage import MemoryStorage, RedisStorage
 from limits.aio.strategies import MovingWindowRateLimiter
 
 from app.core.config import settings
@@ -11,7 +11,7 @@ from app.core.config import settings
 class LoginRateLimiter:
     def __init__(
         self,
-        storage: RedisStorage | MemoryStorage | None = None, 
+        storage: RedisStorage | MemoryStorage | None = None,
     ) -> None:
         self.storage = storage or RedisStorage(
             settings.REDIS_URL,
@@ -54,18 +54,14 @@ class LoginRateLimiter:
         identifiers: list[tuple[RateLimitItemPerMinute, str, str]] = [
             (
                 self.email_limit,
-                "email", 
+                "email",
                 normalized_email,
             ),
         ]
 
         if client_ip is not None:
             identifiers.append(
-                (
-                    self.ip_limit,
-                    "ip", 
-                    client_ip
-                ),
+                (self.ip_limit, "ip", client_ip),
             )
 
         retry_after_values: list[int] = []
@@ -114,7 +110,7 @@ class LoginRateLimiter:
             await self.limiter.hit(
                 self.ip_limit,
                 "ip",
-                client_ip,  
+                client_ip,
             )
 
         await self.limiter.hit(

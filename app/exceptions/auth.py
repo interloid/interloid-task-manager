@@ -96,6 +96,7 @@ class LoginRateLimitExceededException(AppException):
             },
         )
 
+
 class PasswordResetRateLimitExceededException(AppException):
     def __init__(
         self,
@@ -109,6 +110,7 @@ class PasswordResetRateLimitExceededException(AppException):
                 "Retry-After": str(retry_after),
             },
         )
+
 
 class SessionNotFoundException(AppException):
     def __init__(self) -> None:
@@ -136,6 +138,7 @@ class EmailOtpAttemptsExceededException(AppException):
             code="EMAIL_OTP_ATTEMPTS_EXCEEDED",
         )
 
+
 class EmailAlreadyVerifiedException(AppException):
     def __init__(self) -> None:
         super().__init__(
@@ -151,4 +154,16 @@ class EmailNotVerifiedException(AppException):
             status_code=status.HTTP_403_FORBIDDEN,
             message="Email verification is required before login",
             code="EMAIL_NOT_VERIFIED",
+        )
+
+
+class OAuthAccountConflictException(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            message=(
+                "An account with this email already exists. "
+                "Log in with your existing account first."
+            ),
+            code="OAUTH_ACCOUNT_CONFLICT",
         )

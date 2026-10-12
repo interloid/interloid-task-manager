@@ -308,7 +308,7 @@ class EmailVerificationService:
         )
 
         await self.user_repository.mark_email_verified(user)
-        
+
         await self.email_otp_repository.mark_used(
             email_otp,
         )

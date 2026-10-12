@@ -75,9 +75,7 @@ async def login(
         "user-agent",
     )
 
-    client_ip = (
-        http_request.client.host if http_request.client is not None else None
-    )
+    client_ip = http_request.client.host if http_request.client is not None else None
 
     tokens = await service.login(
         request,
