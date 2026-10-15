@@ -92,3 +92,17 @@ TOO_MANY_REQUESTS_RESPONSE: OpenAPIResponses = {
         "description": "Too many requests",
     }
 }
+
+PAYLOAD_TOO_LARGE_RESPONSE: OpenAPIResponses = {
+    status.HTTP_413_CONTENT_TOO_LARGE: {
+        "model": ErrorResponse,
+        "description": "Uploaded file exceeds the maximum allowed size",
+    }
+}
+
+UNSUPPORTED_MEDIA_TYPE_RESPONSE: OpenAPIResponses = {
+    status.HTTP_415_UNSUPPORTED_MEDIA_TYPE: {
+        "model": ErrorResponse,
+        "description": "Uploaded file content type is not supported",
+    }
+}

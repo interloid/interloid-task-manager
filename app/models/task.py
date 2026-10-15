@@ -10,7 +10,7 @@ from app.enums.task import TaskPriority, TaskStatus
 from app.models.base_model import BaseModelMixin
 
 if TYPE_CHECKING:
-    from app.models.user import User
+    from app.models import TaskAttachment, User
 
 
 class Task(BaseModelMixin, Base):
@@ -61,4 +61,9 @@ class Task(BaseModelMixin, Base):
 
     owner: Mapped["User"] = relationship(
         back_populates="tasks",
+    )
+
+    attachments: Mapped[list["TaskAttachment"]] = relationship(
+        back_populates="task",
+        cascade="all, delete-orphan",
     )

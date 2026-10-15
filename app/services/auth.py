@@ -112,7 +112,7 @@ class AuthService:
             user.password_hash
             if user is not None and user.password_hash is not None
             else DUMMY_PASSWORD_HASH
-        )   
+        )
 
         password_ok = verify_password(request.password, password_hash)
 

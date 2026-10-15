@@ -31,6 +31,23 @@ class Settings(BaseSettings):
 
     SECRET_KEY: SecretStr
 
+    AWS_REGION: str = "ap-southeast-1"
+    S3_BUCKET_NAME: str
+
+    AWS_ACCESS_KEY_ID: SecretStr | None = None
+    AWS_SECRET_ACCESS_KEY: SecretStr | None = None
+
+    S3_PRESIGNED_URL_EXPIRE_SECONDS: int = Field(
+        default=300,
+        ge=60,
+        le=3600,
+    )
+
+    TASK_ATTACHMENT_MAX_SIZE_BYTES: int = Field(
+        default=10 * 1024 * 1024,
+        ge=1,
+    )
+
     EMAIL_OTP_EXPIRE_MINUTES: int = Field(
         default=5,
         ge=1,

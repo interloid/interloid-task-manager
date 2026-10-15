@@ -21,13 +21,13 @@ class FakeGoogleOAuthClient:
             }
         }
 
+
 class FakeGoogleOAuthClientWithClaims:
     def __init__(self, claims: dict) -> None:
         self.claims = claims
 
     async def authorize_access_token(self, request):
         return {"userinfo": self.claims}
-
 
 
 @pytest.mark.asyncio
@@ -63,9 +63,7 @@ async def test_existing_google_user_login(
     assert body["refresh_token"]
     assert body["token_type"] == "bearer"
 
-    user_count = await db_session.scalar(
-        select(func.count()).select_from(User)
-    )
+    user_count = await db_session.scalar(select(func.count()).select_from(User))
     oauth_account_count = await db_session.scalar(
         select(func.count()).select_from(OAuthAccount)
     )
@@ -76,6 +74,7 @@ async def test_existing_google_user_login(
     assert user_count == 1
     assert oauth_account_count == 1
     assert refresh_token_count == 1
+
 
 async def test_first_time_google_user_login(
     client: AsyncClient,
@@ -119,9 +118,7 @@ async def test_first_time_google_user_login(
     assert oauth_account is not None
     assert oauth_account.user_id == user.id
 
-    user_count = await db_session.scalar(
-        select(func.count()).select_from(User)
-    )
+    user_count = await db_session.scalar(select(func.count()).select_from(User))
     oauth_account_count = await db_session.scalar(
         select(func.count()).select_from(OAuthAccount)
     )
@@ -132,6 +129,7 @@ async def test_first_time_google_user_login(
     assert user_count == 1
     assert oauth_account_count == 1
     assert refresh_token_count == 1
+
 
 async def test_google_login_existing_email_returns_conflict(
     client: AsyncClient,
@@ -163,9 +161,7 @@ async def test_google_login_existing_email_returns_conflict(
     assert body["success"] is False
     assert body["error"]["code"] == "OAUTH_ACCOUNT_CONFLICT"
 
-    user_count = await db_session.scalar(
-        select(func.count()).select_from(User)
-    )
+    user_count = await db_session.scalar(select(func.count()).select_from(User))
     oauth_account_count = await db_session.scalar(
         select(func.count()).select_from(OAuthAccount)
     )
@@ -176,6 +172,7 @@ async def test_google_login_existing_email_returns_conflict(
     assert user_count == 1
     assert oauth_account_count == 0
     assert refresh_token_count == 0
+
 
 async def test_inactive_google_user_login_returns_401(
     client: AsyncClient,
@@ -209,9 +206,7 @@ async def test_inactive_google_user_login_returns_401(
     body = response.json()
     assert body["success"] is False
 
-    user_count = await db_session.scalar(
-        select(func.count()).select_from(User)
-    )
+    user_count = await db_session.scalar(select(func.count()).select_from(User))
     oauth_account_count = await db_session.scalar(
         select(func.count()).select_from(OAuthAccount)
     )
@@ -249,9 +244,7 @@ async def test_google_login_unverified_email_returns_401(
 
     assert response.status_code == 401
 
-    user_count = await db_session.scalar(
-        select(func.count()).select_from(User)
-    )
+    user_count = await db_session.scalar(select(func.count()).select_from(User))
     oauth_account_count = await db_session.scalar(
         select(func.count()).select_from(OAuthAccount)
     )
@@ -262,6 +255,7 @@ async def test_google_login_unverified_email_returns_401(
     assert user_count == 0
     assert oauth_account_count == 0
     assert refresh_token_count == 0
+
 
 async def test_google_login_missing_email_returns_401(
     client: AsyncClient,
@@ -287,9 +281,7 @@ async def test_google_login_missing_email_returns_401(
 
     assert response.status_code == 401
 
-    user_count = await db_session.scalar(
-        select(func.count()).select_from(User)
-    )
+    user_count = await db_session.scalar(select(func.count()).select_from(User))
     oauth_account_count = await db_session.scalar(
         select(func.count()).select_from(OAuthAccount)
     )
@@ -300,8 +292,3 @@ async def test_google_login_missing_email_returns_401(
     assert user_count == 0
     assert oauth_account_count == 0
     assert refresh_token_count == 0
-
-
-
-
-

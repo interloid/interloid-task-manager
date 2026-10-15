@@ -6,6 +6,7 @@ from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.oauth import router as oauth_router
 from app.api.v1.endpoints.password_recovery import router as password_router
 from app.api.v1.endpoints.session import router as sessions_router
+from app.api.v1.endpoints.task_attachments import router as attachments_router
 from app.api.v1.endpoints.tasks import router as tasks_router
 from app.api.v1.endpoints.user_profile import router as profile_router
 from app.api.v1.endpoints.users import router as users_router
@@ -29,3 +30,5 @@ api_router.include_router(profile_router)
 api_router.include_router(users_router)
 
 api_router.include_router(tasks_router)
+
+api_router.include_router(attachments_router)
