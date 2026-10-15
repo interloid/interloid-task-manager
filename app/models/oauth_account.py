@@ -28,6 +28,7 @@ class OAuthAccount(BaseModelMixin, Base):
             ondelete="CASCADE",
         ),
         nullable=False,
+        index=True,
     )
 
     provider: Mapped[str] = mapped_column(

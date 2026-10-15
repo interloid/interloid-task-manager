@@ -6,9 +6,11 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.oauth import oauth
 from app.db.dependencies import get_db
-from app.exceptions.auth import UnauthorizedException
+from app.exceptions.auth import BadRequestException, UnauthorizedException
+from app.schemas import APIResponse, LoginResponse
 from app.services.oauth import OAuthService
 
 router = APIRouter(
@@ -32,22 +34,20 @@ async def oauth_login(
     client = oauth.create_client(provider)
 
     if client is None:
-        raise UnauthorizedException()
+        raise BadRequestException()
 
-    redirect_uri = request.url_for(
-        "oauth_callback",
-        provider=provider,
-    )
+    redirect_uri = settings.GOOGLE_REDIRECT_URI
 
     return await client.authorize_redirect(
         request,
-        str(redirect_uri),
+        redirect_uri
     )
 
 
 @router.get(
     "/callback",
     name="oauth_callback",
+    response_model=APIResponse[LoginResponse]
 )
 async def oauth_callback(
     provider: OAuthProvider,
@@ -57,10 +57,11 @@ async def oauth_callback(
     client = oauth.create_client(provider)
 
     if client is None:
-        raise UnauthorizedException()
+        raise BadRequestException()
 
     try:
         token = await client.authorize_access_token(request)
+
     except OAuthError as exc:
         raise UnauthorizedException() from exc
 
@@ -71,57 +72,35 @@ async def oauth_callback(
 
     service = OAuthService(session)
 
-    return await service.login(
+    result = await service.login(
         provider=provider,
         claims=claims,
         user_agent=request.headers.get("user-agent"),
     )
 
+    response = RedirectResponse(
+        url=settings.FRONTEND_URL,
+        status_code=303,
+    )
 
-# @router.get(
-#     "/callback",
-#     name="oauth_callback",
-# )
-# async def oauth_callback(
-#     provider: OAuthProvider,
-#     request: Request,
-#     session: AsyncSession = Depends(get_db, scope="function"),
-# ):
-#     client = oauth.create_client(provider)
+    response.set_cookie(
+        key="access_token",
+        value=result.access_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/",
+    )
 
-#     if client is None:
-#         logger.warning("OAuth client not configured: provider=%s", provider)
-#         raise UnauthorizedException()
+    response.set_cookie(
+        key="refresh_token",
+        value=result.refresh_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/",
+    )
 
-#     try:
-#         token = await client.authorize_access_token(request)
-#     except OAuthError as exc:
-#         logger.warning(
-#             "OAuth authorization failed: provider=%s, error_type=%s",
-#             provider,
-#             type(exc).__name__,
-#         )
-#         raise UnauthorizedException() from exc
-
-#     claims = token.get("userinfo")
-
-#     if not claims:
-#         logger.warning("OAuth userinfo missing: provider=%s", provider)
-#         raise UnauthorizedException()
-
-#     logger.info(
-#         "OAuth claims received: provider=%s, sub_present=%s, "
-#         "email_present=%s, email_verified=%s",
-#         provider,
-#         bool(claims.get("sub")),
-#         bool(claims.get("email")),
-#         claims.get("email_verified"),
-#     )
-
-#     service = OAuthService(session)
-
-#     return await service.login(
-#         provider=provider,
-#         claims=claims,
-#         user_agent=request.headers.get("user-agent"),
-#     )
+    return response

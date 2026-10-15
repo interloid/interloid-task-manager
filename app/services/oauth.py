@@ -45,6 +45,9 @@ class OAuthService:
         email = claims.get("email")
         email_verified = claims.get("email_verified")
 
+        if isinstance(email, str):
+            email = email.strip().lower()
+
         if (
             not isinstance(provider_user_id, str)
             or not provider_user_id
@@ -110,7 +113,6 @@ class OAuthService:
                     await self.oauth_account_repository.create(oauth_account)
 
             except IntegrityError as exc:
-                print("OAuth database integrity error:", repr(exc.orig))
                 raise OAuthAccountConflictException() from exc
 
         browser, os_name = parse_user_agent(user_agent)

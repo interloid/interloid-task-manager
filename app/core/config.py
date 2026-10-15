@@ -31,6 +31,11 @@ class Settings(BaseSettings):
 
     SECRET_KEY: SecretStr
 
+    FRONTEND_URL: str = "http://localhost:5173"
+
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+
     EMAIL_OTP_EXPIRE_MINUTES: int = Field(
         default=5,
         ge=1,

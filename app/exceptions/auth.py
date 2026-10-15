@@ -167,3 +167,11 @@ class OAuthAccountConflictException(AppException):
             ),
             code="OAUTH_ACCOUNT_CONFLICT",
         )
+
+class BadRequestException(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message="Unsupported or unconfigured OAuth provider.",
+            code="BAD_REQUEST",
+        )

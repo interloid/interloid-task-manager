@@ -3,6 +3,7 @@ from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.oauth import oauth
 from app.models.oauth_account import OAuthAccount
 from app.models.refresh_token import RefreshToken
@@ -56,12 +57,22 @@ async def test_existing_google_user_login(
         "/api/v1/auth/google/callback",
     )
 
-    body = response.json()
+    assert response.status_code == 303
+    assert response.headers["location"] == settings.FRONTEND_URL
 
-    assert response.status_code == 200
-    assert body["access_token"]
-    assert body["refresh_token"]
-    assert body["token_type"] == "bearer"
+    set_cookie_headers = response.headers.get_list("set-cookie")
+
+    assert any(
+        cookie.startswith("access_token=")
+        and "HttpOnly" in cookie
+        for cookie in set_cookie_headers
+    )
+
+    assert any(
+        cookie.startswith("refresh_token=")
+        and "HttpOnly" in cookie
+        for cookie in set_cookie_headers
+    )
 
     user_count = await db_session.scalar(
         select(func.count()).select_from(User)
@@ -92,15 +103,23 @@ async def test_first_time_google_user_login(
         "/api/v1/auth/google/callback",
     )
 
-    print("Status:", response.status_code)
-    print("Response:", response.json())
-    assert response.status_code == 200
-
-    body = response.json()
-    assert body["access_token"]
-    assert body["refresh_token"]
-    assert body["token_type"] == "bearer"
-
+    assert response.status_code == 303
+    assert response.headers["location"] == settings.FRONTEND_URL
+    
+    set_cookie_headers = response.headers.get_list("set-cookie")
+    
+    assert any(
+        cookie.startswith("access_token=")
+        and "HttpOnly" in cookie
+        for cookie in set_cookie_headers
+    )
+    
+    assert any(
+        cookie.startswith("refresh_token=")
+        and "HttpOnly" in cookie
+        for cookie in set_cookie_headers
+    )
+    
     user = await db_session.scalar(
         select(User).where(
             User.email == "oauth-first-time@example.com",
