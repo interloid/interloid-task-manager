@@ -81,8 +81,8 @@ async def update_user(
     refresh_token_repository = RefreshTokenRepository(session)
 
     service = UserService(
-        user_repository=user_repository, 
-        refresh_token_repository=refresh_token_repository, 
+        user_repository=user_repository,
+        refresh_token_repository=refresh_token_repository,
     )
 
     user = await service.update_user(

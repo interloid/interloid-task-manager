@@ -170,16 +170,11 @@ async def test_forgot_password_invalidates_previous_reset_otp(
 
         assert first_otp.invalidated_at is None
 
-        first_otp.created_at = (
-            datetime.now(UTC)
-            - timedelta(
-                seconds=settings.PASSWORD_RESET_OTP_RESEND_COOLDOWN_SECONDS + 1,
-            )
+        first_otp.created_at = datetime.now(UTC) - timedelta(
+            seconds=settings.PASSWORD_RESET_OTP_RESEND_COOLDOWN_SECONDS + 1,
         )
 
         await db_session.commit()
-
-        
 
         second_response = await client.post(
             "/api/v1/auth/forgot-password",
@@ -224,5 +219,3 @@ async def test_forgot_password_invalidates_previous_reset_otp(
             get_mailer,
             None,
         )
-
-    

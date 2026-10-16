@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     REDIS_URL: str
     REDIS_KEY_PREFIX: str
 
+    SECRET_KEY: SecretStr
+
+    FRONTEND_URL: str = "http://localhost:5173"
+
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+
     EMAIL_OTP_EXPIRE_MINUTES: int = Field(
         default=5,
         ge=1,
@@ -53,7 +60,6 @@ class Settings(BaseSettings):
         le=300,
     )
 
-
     SMTP_HOST: str
     SMTP_PORT: int = 587
 
@@ -65,6 +71,10 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
 
     OTP_SECRET_KEY: SecretStr
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: SecretStr
+    GOOGLE_REDIRECT_URI: str
 
     JWT_SECRET_KEY: SecretStr
     JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"

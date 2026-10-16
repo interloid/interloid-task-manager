@@ -2,7 +2,7 @@ from datetime import UTC, date, datetime
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, Query
+from fastapi import Cookie, Depends, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
@@ -31,11 +31,14 @@ bearer_scheme = HTTPBearer(auto_error=False)
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     session: AsyncSession = Depends(get_db, scope="function"),
+    access_token: str | None = Cookie(default=None),
 ) -> User:
-    if credentials is None:
+    if credentials is not None:
+        token = credentials.credentials
+    elif access_token is not None:
+        token = access_token
+    else:
         raise UnauthorizedException()
-
-    token = credentials.credentials
 
     try:
         payload = decode_token(token)
@@ -141,12 +144,16 @@ def get_task_list_query(
 
 async def get_current_session_id(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    access_token: str | None = Cookie(default=None),
 ) -> UUID:
-    if credentials is None:
+    if credentials is not None:
+        token = credentials.credentials
+    elif access_token is not None:
+        token = access_token
+    else:
         raise UnauthorizedException()
-
     try:
-        payload = decode_token(credentials.credentials)
+        payload = decode_token(token)
     except InvalidTokenError as exc:
         raise UnauthorizedException() from exc
 

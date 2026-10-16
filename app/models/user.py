@@ -9,6 +9,7 @@ from app.enums import RoleName
 from app.models.base_model import BaseModelMixin
 
 if TYPE_CHECKING:
+    from app.models.oauth_account import OAuthAccount
     from app.models.refresh_token import RefreshToken
     from app.models.task import Task
 
@@ -25,7 +26,7 @@ class User(BaseModelMixin, Base):
 
     password_hash: Mapped[str] = mapped_column(
         String(255),
-        nullable=False,
+        nullable=True,
     )
 
     first_name: Mapped[str] = mapped_column(
@@ -72,5 +73,10 @@ class User(BaseModelMixin, Base):
 
     tasks: Mapped[list["Task"]] = relationship(
         back_populates="owner",
+        cascade="all, delete-orphan",
+    )
+
+    oauth_accounts: Mapped[list["OAuthAccount"]] = relationship(
+        back_populates="user",
         cascade="all, delete-orphan",
     )

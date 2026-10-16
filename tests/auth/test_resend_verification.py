@@ -138,8 +138,7 @@ async def test_resend_verification_within_cooldown_returns_200(
 
         assert body["success"] is True
         assert (
-            body["message"]
-            == "If an account exists for this email, "
+            body["message"] == "If an account exists for this email, "
             "a verification code has been sent."
         )
 
@@ -207,8 +206,7 @@ async def test_resend_verification_already_verified_returns_200(
 
         assert body["success"] is True
         assert (
-            body["message"]
-            == "If an account exists for this email, "
+            body["message"] == "If an account exists for this email, "
             "a verification code has been sent."
         )
         assert len(fake_mailer.sent_emails) == 1
