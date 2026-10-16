@@ -168,6 +168,7 @@ class OAuthAccountConflictException(AppException):
             code="OAUTH_ACCOUNT_CONFLICT",
         )
 
+
 class BadRequestException(AppException):
     def __init__(self) -> None:
         super().__init__(

@@ -1,4 +1,3 @@
-
 """add index to oauth account user id
 
 Revision ID: ed869b184dc7

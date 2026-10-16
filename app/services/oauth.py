@@ -103,7 +103,6 @@ class OAuthService:
             try:
                 async with self.session.begin_nested():
                     user = await self.user_repository.create(user)
-
                     oauth_account = OAuthAccount(
                         user_id=user.id,
                         provider=provider,

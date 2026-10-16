@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Cookie, Depends, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.responses import (
@@ -121,15 +121,28 @@ async def refresh_token(
     },
 )
 async def logout(
-    request: RefreshRequest,
+    response: Response,
+    request: RefreshRequest | None = None,
+    refresh_token_cookie: str | None = Cookie(
+        default=None,
+        alias="refresh_token",
+    ),
     session: AsyncSession = Depends(get_db, scope="function"),
 ) -> MessageResponse:
+    refresh_token = (
+        request.refresh_token if request is not None else None
+    ) or refresh_token_cookie
+
     service = AuthService(session)
+    await service.logout(refresh_token)
 
-    await service.logout(
-        request.refresh_token,
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+    )
+    response.delete_cookie(
+        key="access_token",
+        path="/",
     )
 
-    return MessageResponse(
-        message="Logged out successfully",
-    )
+    return MessageResponse(message="Logged out successfully")

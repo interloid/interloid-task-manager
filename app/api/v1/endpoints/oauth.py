@@ -10,7 +10,6 @@ from app.core.config import settings
 from app.core.oauth import oauth
 from app.db.dependencies import get_db
 from app.exceptions.auth import BadRequestException, UnauthorizedException
-from app.schemas import APIResponse, LoginResponse
 from app.services.oauth import OAuthService
 
 router = APIRouter(
@@ -38,16 +37,18 @@ async def oauth_login(
 
     redirect_uri = settings.GOOGLE_REDIRECT_URI
 
-    return await client.authorize_redirect(
-        request,
-        redirect_uri
-    )
+    return await client.authorize_redirect(request, redirect_uri)
 
 
 @router.get(
     "/callback",
     name="oauth_callback",
-    response_model=APIResponse[LoginResponse]
+    response_class=RedirectResponse,
+    responses={
+        status.HTTP_303_SEE_OTHER: {
+            "description": "Redirect to the frontend after successful OAuth login."
+        },
+    },
 )
 async def oauth_callback(
     provider: OAuthProvider,
@@ -80,7 +81,7 @@ async def oauth_callback(
 
     response = RedirectResponse(
         url=settings.FRONTEND_URL,
-        status_code=303,
+        status_code=status.HTTP_303_SEE_OTHER,
     )
 
     response.set_cookie(

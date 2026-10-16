@@ -144,12 +144,16 @@ def get_task_list_query(
 
 async def get_current_session_id(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    access_token: str | None = Cookie(default=None),
 ) -> UUID:
-    if credentials is None:
+    if credentials is not None:
+        token = credentials.credentials
+    elif access_token is not None:
+        token = access_token
+    else:
         raise UnauthorizedException()
-
     try:
-        payload = decode_token(credentials.credentials)
+        payload = decode_token(token)
     except InvalidTokenError as exc:
         raise UnauthorizedException() from exc
 

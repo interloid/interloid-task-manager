@@ -112,7 +112,7 @@ class AuthService:
             user.password_hash
             if user is not None and user.password_hash is not None
             else DUMMY_PASSWORD_HASH
-        )   
+        )
 
         password_ok = verify_password(request.password, password_hash)
 
@@ -179,7 +179,6 @@ class AuthService:
             await self.refresh_token_repository.revoke_family(
                 stored_token.family_id,
             )
-
             await self.session.commit()
 
             logger.warning(
@@ -241,8 +240,11 @@ class AuthService:
 
     async def logout(
         self,
-        refresh_token: str,
+        refresh_token: str | None,
     ) -> None:
+        if not refresh_token:
+            raise UnauthorizedException()
+
         refresh_token_hash = hash_refresh_token(refresh_token)
 
         stored_token = await self.refresh_token_repository.get_by_token_hash_for_update(
