@@ -86,6 +86,14 @@ class TaskAttachmentService:
         if file_size > settings.TASK_ATTACHMENT_MAX_SIZE_BYTES:
             raise AttachmentTooLargeException()
 
+        content = upload.file.read()
+        upload.file.seek(0)
+
+        self._validate_file_content(
+            content,
+            content_type,
+        )
+
         storage_key = f"tasks/{task_id}/{uuid4().hex}"
 
         await run_in_threadpool(
@@ -179,11 +187,12 @@ class TaskAttachmentService:
         )
 
         if attachment is None:
-            raise TaskNotFoundException()
+            raise AttachmentNotFoundException()
 
         return await run_in_threadpool(
             self.storage_service.generate_download_url,
             attachment.storage_key,
+            attachment.original_filename,
         )
 
     async def delete_attachment(
@@ -214,3 +223,32 @@ class TaskAttachmentService:
         )
 
         await self.attachment_repository.delete(attachment)
+
+    def _validate_file_content(
+        self,
+        content: bytes,
+        content_type: str,
+    ) -> None:
+        is_valid = False
+
+        if content_type == "application/pdf":
+            is_valid = content.startswith(b"%PDF-")
+
+        elif content_type == "image/png":
+            is_valid = content.startswith(b"\x89PNG\r\n\x1a\n")
+
+        elif content_type == "image/jpeg":
+            is_valid = content.startswith(b"\xff\xd8\xff")
+
+        elif content_type == "text/plain":
+            try:
+                content.decode("utf-8")
+                is_valid = b"\x00" not in content
+            except UnicodeDecodeError:
+                is_valid = False
+
+        if not is_valid:
+            raise InvalidAttachmentException(
+                message="File content does not match the declared content type",
+                code="INVALID_FILE_CONTENT",
+            )

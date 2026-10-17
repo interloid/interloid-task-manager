@@ -74,5 +74,3 @@ async def test_delete_attachment_success(
     )
 
     assert deleted_attachment is None
-
-    assert deleted_attachment is None

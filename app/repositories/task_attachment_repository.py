@@ -38,3 +38,14 @@ class TaskAttachmentRepository(BaseRepository[TaskAttachment]):
         result = await self.session.execute(stmt)
 
         return result.scalar_one_or_none()
+
+    async def get_storage_keys_by_task(
+        self,
+        task_id: UUID,
+    ) -> list[str]:
+        stmt = select(TaskAttachment.storage_key).where(
+            TaskAttachment.task_id == task_id,
+        )
+        result = await self.session.execute(stmt)
+
+        return list(result.scalars().all())

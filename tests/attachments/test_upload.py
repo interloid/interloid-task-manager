@@ -5,9 +5,38 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.enums.task import TaskPriority, TaskStatus
 from app.models.task import Task
 from app.models.user import User
+
+
+async def create_task_and_get_token(
+    client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+) -> tuple[Task, str]:
+    task = Task(
+        owner_id=test_user.id,
+        title="Test attachment task",
+        status=TaskStatus.TODO,
+        priority=TaskPriority.MEDIUM,
+    )
+    db_session.add(task)
+    await db_session.commit()
+    await db_session.refresh(task)
+
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+    return task, access_token
 
 
 @pytest.mark.anyio
@@ -53,7 +82,6 @@ async def test_upload_attachment_success(
                 ),
             },
         )
-    print(response.json())
     assert response.status_code == 201
 
     body = response.json()
@@ -64,3 +92,122 @@ async def test_upload_attachment_success(
     assert body["data"]["file_size"] > 0
 
     mock_storage.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_upload_attachment_too_large(
+    client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    task, access_token = await create_task_and_get_token(client, test_user, db_session)
+
+    monkeypatch.setattr(
+        settings,
+        "TASK_ATTACHMENT_MAX_SIZE_BYTES",
+        10,
+    )
+
+    response = await client.post(
+        f"/api/v1/tasks/{task.id}/attachments",
+        headers={"Authorization": f"Bearer {access_token}"},
+        files={
+            "file": (
+                "sample.pdf",
+                b"%PDF-1.4 sample content",
+                "application/pdf",
+            ),
+        },
+    )
+
+    assert response.status_code == 413
+    assert response.json()["success"] is False
+
+
+@pytest.mark.anyio
+async def test_upload_attachment_unsupported_type(
+    client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+) -> None:
+    task, access_token = await create_task_and_get_token(client, test_user, db_session)
+
+    response = await client.post(
+        f"/api/v1/tasks/{task.id}/attachments",
+        headers={"Authorization": f"Bearer {access_token}"},
+        files={
+            "file": (
+                "sample.exe",
+                b"dummy executable content",
+                "application/x-msdownload",
+            ),
+        },
+    )
+
+    assert response.status_code == 415
+    assert response.json()["success"] is False
+
+
+@pytest.mark.anyio
+async def test_upload_attachment_empty_file(
+    client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+) -> None:
+    task, access_token = await create_task_and_get_token(client, test_user, db_session)
+
+    response = await client.post(
+        f"/api/v1/tasks/{task.id}/attachments",
+        headers={"Authorization": f"Bearer {access_token}"},
+        files={
+            "file": ("empty.txt", b"", "text/plain"),
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["success"] is False
+
+
+@pytest.mark.anyio
+async def test_upload_attachment_missing_filename(
+    client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+) -> None:
+    task, access_token = await create_task_and_get_token(client, test_user, db_session)
+
+    response = await client.post(
+        f"/api/v1/tasks/{task.id}/attachments",
+        headers={"Authorization": f"Bearer {access_token}"},
+        files={
+            "file": ("  ", b"Hello World", "text/plain"),
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["success"] is False
+
+
+@pytest.mark.anyio
+async def test_upload_attachment_filename_too_long(
+    client: AsyncClient,
+    test_user: User,
+    db_session: AsyncSession,
+) -> None:
+    task, access_token = await create_task_and_get_token(client, test_user, db_session)
+
+    response = await client.post(
+        f"/api/v1/tasks/{task.id}/attachments",
+        headers={"Authorization": f"Bearer {access_token}"},
+        files={
+            "file": (
+                f"{'a' * 256}.txt",
+                b"Hello World",
+                "text/plain",
+            ),
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["success"] is False

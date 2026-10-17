@@ -49,14 +49,19 @@ class S3StorageService:
             logger.exception("Failed to upload attachment to S3")
             raise
 
-    def generate_download_url(self, storage_key: str) -> str:
+    def generate_download_url(
+        self, storage_key: str, filename: str | None = None
+    ) -> str:
+        params = {
+            "Bucket": self.bucket_name,
+            "Key": storage_key,
+        }
+        if filename:
+            params["ResponseContentDisposition"] = f'attachment; filename="{filename}"'
         try:
             return self.client.generate_presigned_url(
                 ClientMethod="get_object",
-                Params={
-                    "Bucket": self.bucket_name,
-                    "Key": storage_key,
-                },
+                Params=params,
                 ExpiresIn=settings.S3_PRESIGNED_URL_EXPIRE_SECONDS,
             )
         except (ClientError, BotoCoreError):
