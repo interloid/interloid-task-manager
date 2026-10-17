@@ -27,6 +27,7 @@ from app.schemas.task import (
     TaskResponse,
     TaskUpdateRequest,
 )
+from app.schemas.task_attachment import TaskAttachmentResponse
 from app.schemas.user import UserUpdateRequest
 
 __all__ = [
@@ -47,6 +48,7 @@ __all__ = [
     "ResendVerificationRequest",
     "ResetPasswordRequest",
     "SessionResponse",
+    "TaskAttachmentResponse",
     "TaskCreateRequest",
     "TaskListQuery",
     "TaskResponse",

@@ -1,11 +1,13 @@
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from app.enums import RoleName
 from app.exceptions.task import TaskNotFoundException
 from app.models.task import Task
 from app.models.user import User
+from app.repositories.task_attachment_repository import TaskAttachmentRepository
 from app.repositories.tasks import TaskRepository
 from app.schemas import (
     PaginatedResponse,
@@ -15,11 +17,14 @@ from app.schemas import (
     TaskResponse,
     TaskUpdateRequest,
 )
+from app.services.s3_storage_service import S3StorageService
 
 
 class TaskService:
     def __init__(self, session: AsyncSession) -> None:
         self.task_repository = TaskRepository(session)
+        self.attachment_repository = TaskAttachmentRepository(session)
+        self.storage_service = S3StorageService()
 
     async def create_task(
         self,
@@ -137,5 +142,13 @@ class TaskService:
 
         if current_user.role != RoleName.ADMIN and task.owner_id != current_user.id:
             raise TaskNotFoundException()
+
+        storage_keys = await self.attachment_repository.get_storage_keys_by_task(id)
+
+        for storage_key in storage_keys:
+            await run_in_threadpool(
+                self.storage_service.delete_file,
+                storage_key,
+            )
 
         await self.task_repository.delete(task)
