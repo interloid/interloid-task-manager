@@ -29,6 +29,11 @@ from app.schemas.task import (
 )
 from app.schemas.task_attachment import TaskAttachmentResponse
 from app.schemas.user import UserUpdateRequest
+from app.schemas.task_comment import (
+    TaskCommentCreateRequest,
+    TaskCommentResponse,
+    TaskCommentUpdateRequest,
+) 
 
 __all__ = [
     "APIResponse",
