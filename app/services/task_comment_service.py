@@ -6,11 +6,11 @@ from app.exceptions.task_comment import TaskCommentNotFoundException
 from app.models import TaskComment, User
 from app.repositories import TaskCommentRepository, TaskRepository
 from app.schemas import (
+    PaginatedResponse,
+    PaginationMeta,
     TaskCommentCreateRequest,
     TaskCommentResponse,
     TaskCommentUpdateRequest,
-    PaginatedResponse,
-    PaginationMeta,
 )
 
 
@@ -44,14 +44,14 @@ class TaskCommentService:
         comment = await self.comment_repository.create(comment)
 
         return TaskCommentResponse.model_validate(comment)
-   
+
     async def list_comments(
         self,
         *,
         task_id: UUID,
         current_user: User,
-        page:int = 1,
-        page_size:int = 20,
+        page: int = 1,
+        page_size: int = 20,
     ) -> PaginatedResponse[TaskCommentResponse]:
         await self._get_authorized_task(
             task_id=task_id,
@@ -66,10 +66,7 @@ class TaskCommentService:
             offset=offset,
         )
 
-        data =  [
-            TaskCommentResponse.model_validate(comment)
-            for comment in comments
-        ]
+        data = [TaskCommentResponse.model_validate(comment) for comment in comments]
 
         total_pages = (total + page_size - 1) // page_size
 
@@ -102,10 +99,7 @@ class TaskCommentService:
             comment_id=comment_id,
         )
 
-        if (
-            current_user.role != RoleName.ADMIN
-            and comment.user_id != current_user.id
-        ):
+        if current_user.role != RoleName.ADMIN and comment.user_id != current_user.id:
             raise TaskCommentNotFoundException()
 
         comment.content = request.content
@@ -131,10 +125,7 @@ class TaskCommentService:
             comment_id=comment_id,
         )
 
-        if (
-            current_user.role != RoleName.ADMIN
-            and comment.user_id != current_user.id
-        ):
+        if current_user.role != RoleName.ADMIN and comment.user_id != current_user.id:
             raise TaskCommentNotFoundException()
 
         await self.comment_repository.delete(comment)
@@ -150,10 +141,7 @@ class TaskCommentService:
         if task is None:
             raise TaskNotFoundException()
 
-        if (
-            current_user.role != RoleName.ADMIN
-            and task.owner_id != current_user.id
-        ):
+        if current_user.role != RoleName.ADMIN and task.owner_id != current_user.id:
             raise TaskNotFoundException()
 
         return task
@@ -173,4 +161,3 @@ class TaskCommentService:
             raise TaskCommentNotFoundException()
 
         return comment
-

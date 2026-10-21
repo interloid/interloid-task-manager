@@ -2,6 +2,7 @@ from fastapi import status
 
 from app.exceptions.base import AppException
 
+
 class TaskCommentNotFoundException(AppException):
     def __init__(self) -> None:
         super().__init__(

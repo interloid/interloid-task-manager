@@ -17,11 +17,11 @@ from app.core.config import settings
 from app.core.rate_limit import login_rate_limiter
 from app.core.security import hash_password
 from app.db.dependencies import get_db
-from app.enums import RoleName
+from app.enums import RoleName, TaskPriority, TaskStatus
 from app.mail.dependencies import get_mailer
 from app.mail.fake import FakeMailer
 from app.main import app
-from app.models.user import User
+from app.models import Task, User
 
 
 def validate_test_database() -> None:
@@ -207,6 +207,65 @@ async def second_user(
     await db_session.refresh(user)
 
     return user
+
+
+@pytest.fixture
+async def test_task(
+    db_session: AsyncSession,
+    test_user: User,
+) -> Task:
+    task = Task(
+        owner_id=test_user.id,
+        title="Task for comment tests",
+        status=TaskStatus.TODO,
+        priority=TaskPriority.MEDIUM,
+    )
+
+    db_session.add(task)
+    await db_session.commit()
+    await db_session.refresh(task)
+
+    return task
+
+
+@pytest.fixture
+async def user_headers(
+    client: AsyncClient,
+    test_user: User,
+) -> dict[str, str]:
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert response.status_code == 200
+
+    access_token = response.json()["data"]["access_token"]
+
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+async def admin_headers(
+    client: AsyncClient,
+    admin_user: User,
+) -> dict[str, str]:
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": admin_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert response.status_code == 200
+
+    access_token = response.json()["data"]["access_token"]
+
+    return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture(autouse=True)

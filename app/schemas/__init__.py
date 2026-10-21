@@ -28,12 +28,12 @@ from app.schemas.task import (
     TaskUpdateRequest,
 )
 from app.schemas.task_attachment import TaskAttachmentResponse
-from app.schemas.user import UserUpdateRequest
 from app.schemas.task_comment import (
     TaskCommentCreateRequest,
     TaskCommentResponse,
     TaskCommentUpdateRequest,
-) 
+)
+from app.schemas.user import UserUpdateRequest
 
 __all__ = [
     "APIResponse",
@@ -54,6 +54,9 @@ __all__ = [
     "ResetPasswordRequest",
     "SessionResponse",
     "TaskAttachmentResponse",
+    "TaskCommentCreateRequest",
+    "TaskCommentResponse",
+    "TaskCommentUpdateRequest",
     "TaskCreateRequest",
     "TaskListQuery",
     "TaskResponse",

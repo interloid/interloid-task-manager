@@ -1,38 +1,42 @@
-from uuid import UUID
 from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter,status,Depends, Query
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.api.responses import (
+    NOT_FOUND_RESPONSE,
+    UNAUTHORIZED_RESPONSE,
+    VALIDATION_ERROR_RESPONSE,
+)
 from app.db.dependencies import get_db
-from app.repositories import TaskRepository,TaskCommentRepository
-from app.services.task_comment_service import TaskCommentService
+from app.models import User
+from app.repositories import TaskCommentRepository, TaskRepository
 from app.schemas import (
     APIResponse,
     MessageResponse,
-    TaskCommentResponse,
-    TaskCommentCreateRequest,
-    TaskCommentUpdateRequest,
     PaginatedResponse,
+    TaskCommentCreateRequest,
+    TaskCommentResponse,
+    TaskCommentUpdateRequest,
 )
-from app.api.responses import (
-    UNAUTHORIZED_RESPONSE,
-    NOT_FOUND_RESPONSE,
-    VALIDATION_ERROR_RESPONSE,
-)
-from app.models import User
+from app.services.task_comment_service import TaskCommentService
 
 router = APIRouter(
     prefix="/tasks",
     tags=["Task Comments"],
 )
 
-def get_task_comment_service(db: AsyncSession,) -> TaskCommentService: 
+
+def get_task_comment_service(
+    db: AsyncSession,
+) -> TaskCommentService:
     return TaskCommentService(
         task_repository=TaskRepository(db),
         comment_repository=TaskCommentRepository(db),
     )
+
 
 @router.post(
     "/{task_id}/comments",
@@ -44,7 +48,6 @@ def get_task_comment_service(db: AsyncSession,) -> TaskCommentService:
         **VALIDATION_ERROR_RESPONSE,
     },
 )
-
 async def create_task_comment(
     task_id: UUID,
     request: TaskCommentCreateRequest,
@@ -64,6 +67,7 @@ async def create_task_comment(
         data=comment,
     )
 
+
 @router.get(
     "/{task_id}/comments",
     response_model=PaginatedResponse[TaskCommentResponse],
@@ -73,23 +77,22 @@ async def create_task_comment(
         **NOT_FOUND_RESPONSE,
     },
 )
-
 async def list_task_comments(
     task_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db, scope="function")],
     page: Annotated[int, Query(ge=1)] = 1,
-    page_size: Annotated[int , Query(ge=1,le=100)] = 20,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> PaginatedResponse[TaskCommentResponse]:
-
     service = get_task_comment_service(db)
 
     return await service.list_comments(
         task_id=task_id,
         current_user=current_user,
-        page = page,
-        page_size = page_size,
+        page=page,
+        page_size=page_size,
     )
+
 
 @router.patch(
     "/{task_id}/comments/{comment_id}",
@@ -108,20 +111,20 @@ async def update_task_comment(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db, scope="function")],
 ) -> APIResponse[TaskCommentResponse]:
-    
     service = get_task_comment_service(db)
 
     comment = await service.update_comment(
-        task_id= task_id,
-        comment_id = comment_id,
-        current_user = current_user,
-        request = request
+        task_id=task_id,
+        comment_id=comment_id,
+        current_user=current_user,
+        request=request,
     )
 
     return APIResponse(
         message="Comment updated successfully",
         data=comment,
     )
+
 
 @router.delete(
     "/{task_id}/comments/{comment_id}",
@@ -137,8 +140,7 @@ async def delete_task_comment(
     comment_id: UUID,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db, scope="function")],
- ) -> MessageResponse:
-
+) -> MessageResponse:
     service = get_task_comment_service(db)
 
     await service.delete_comment(
@@ -147,9 +149,4 @@ async def delete_task_comment(
         current_user=current_user,
     )
 
-    return MessageResponse(
-        message="Comment deleted successfully"
-    )
-   
-   
-
+    return MessageResponse(message="Comment deleted successfully")
