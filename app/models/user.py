@@ -9,7 +9,7 @@ from app.enums import RoleName
 from app.models.base_model import BaseModelMixin
 
 if TYPE_CHECKING:
-    from app.models import OAuthAccount, RefreshToken, Task, TaskAttachment
+    from app.models import OAuthAccount, RefreshToken, Task, TaskAttachment, TaskComment
 
 
 class User(BaseModelMixin, Base):
@@ -81,4 +81,9 @@ class User(BaseModelMixin, Base):
 
     task_attachments: Mapped[list["TaskAttachment"]] = relationship(
         back_populates="uploaded_by",
+    )
+
+    comments: Mapped[list["TaskComment"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
