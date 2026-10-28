@@ -9,6 +9,7 @@ from app.api.responses import (
     NOT_FOUND_RESPONSE,
     UNAUTHORIZED_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
+    NOT_FOUND_RESPONSE,
 )
 from app.db.dependencies import get_db
 from app.models import User
@@ -101,7 +102,7 @@ async def list_task_comments(
     responses={
         **UNAUTHORIZED_RESPONSE,
         **VALIDATION_ERROR_RESPONSE,
-        **VALIDATION_ERROR_RESPONSE,
+        **NOT_FOUND_RESPONSE,
     },
 )
 async def update_task_comment(
