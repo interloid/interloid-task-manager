@@ -3,12 +3,17 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
-from app.enums import RoleName
+from app.enums import NotificationType, RoleName
 from app.exceptions.task import TaskNotFoundException
+from app.exceptions.user import UserNotFoundException
 from app.models.task import Task
 from app.models.user import User
-from app.repositories.task_attachment_repository import TaskAttachmentRepository
-from app.repositories.tasks import TaskRepository
+from app.repositories import (
+    NotificationRepository,
+    TaskAttachmentRepository,
+    TaskRepository,
+    UserRepository,
+)
 from app.schemas import (
     PaginatedResponse,
     PaginationMeta,
@@ -17,20 +22,42 @@ from app.schemas import (
     TaskResponse,
     TaskUpdateRequest,
 )
+from app.services.notification import NotificationService
 from app.services.s3_storage_service import S3StorageService
+from app.workers.email_queue import enqueue_email
 
 
 class TaskService:
     def __init__(self, session: AsyncSession) -> None:
+        self.user_repository = UserRepository(session)
         self.task_repository = TaskRepository(session)
         self.attachment_repository = TaskAttachmentRepository(session)
         self.storage_service = S3StorageService()
 
+        self.notification_service = NotificationService(
+            notification_repository=NotificationRepository(session),
+            task_repository=self.task_repository,
+        )
+
     async def create_task(
         self,
         request: TaskCreateRequest,
-        owner_id: UUID,
+        current_user: User,
     ) -> TaskResponse:
+        owner_id = current_user.id
+        assigned_user: User | None = None
+
+        if current_user.role == RoleName.ADMIN and request.owner_id is not None:
+            owner = await self.user_repository.get_by_id(request.owner_id)
+
+            if owner is None:
+                raise UserNotFoundException()
+
+            owner_id = owner.id
+
+            if owner_id != current_user.id:
+                assigned_user = owner
+
         task = Task(
             owner_id=owner_id,
             title=request.title,
@@ -41,6 +68,31 @@ class TaskService:
         )
 
         task = await self.task_repository.create(task)
+
+        if assigned_user is not None:
+            await self.notification_service.create_notification(
+                recipient_id=assigned_user.id,
+                task_id=task.id,
+                notification_type=NotificationType.TASK_ASSIGNED,
+                title="New task assigned to you",
+                message=f"A new task '{task.title}' has been assigned to you.",
+            )
+            await enqueue_email(
+                to_email=assigned_user.email,
+                subject="A new task has been assigned to you",
+                text_body=(
+                    f"Hello,\n\n"
+                    f"A new task '{task.title}' has been assigned to you.\n\n"
+                    "Please log in to the Task Manager to review the task."
+                ),
+                html_body=(
+                    "<h2>A new task has been assigned to you</h2>"
+                    f"<p>A new task <strong>{task.title}</strong> "
+                    "has been assigned to you.</p>"
+                    "<p>Please log in to the Task Manager "
+                    "to review the task.</p>"
+                ),
+            )
 
         return TaskResponse.model_validate(task)
 

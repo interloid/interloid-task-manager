@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.email_auth import router as email_router
 from app.api.v1.endpoints.health import router as health_router
+from app.api.v1.endpoints.notifications import router as notifications_router
 from app.api.v1.endpoints.oauth import router as oauth_router
 from app.api.v1.endpoints.password_recovery import router as password_router
 from app.api.v1.endpoints.session import router as sessions_router
@@ -35,3 +36,5 @@ api_router.include_router(tasks_router)
 api_router.include_router(comments_router)
 
 api_router.include_router(attachments_router)
+
+api_router.include_router(notifications_router)
