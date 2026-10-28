@@ -229,6 +229,26 @@ async def test_task(
 
 
 @pytest.fixture
+async def admin_headers(
+    client: AsyncClient,
+    admin_user: User,
+) -> dict[str, str]:
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": admin_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert response.status_code == 200
+
+    access_token = response.json()["data"]["access_token"]
+
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
 async def user_headers(
     client: AsyncClient,
     test_user: User,
@@ -249,15 +269,15 @@ async def user_headers(
 
 
 @pytest.fixture
-async def admin_headers(
+async def second_user_headers(
     client: AsyncClient,
-    admin_user: User,
+    second_user: User,
 ) -> dict[str, str]:
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": admin_user.email,
-            "password": "StrongPassword123!",
+            "email": second_user.email,
+            "password": "Test1234",
         },
     )
 
