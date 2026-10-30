@@ -3,7 +3,7 @@ from uuid import UUID
 from app.enums import NotificationType, RoleName
 from app.exceptions.task import TaskNotFoundException
 from app.exceptions.task_comment import TaskCommentNotFoundException
-from app.models import TaskComment, User, Task
+from app.models import Task, TaskComment, User
 from app.repositories import TaskCommentRepository, TaskRepository
 from app.schemas import (
     PaginatedResponse,
@@ -162,7 +162,7 @@ class TaskCommentService:
         *,
         task_id: UUID,
         current_user: User,
-    ) -> Task :
+    ) -> Task:
         task = await self.task_repository.get_by_id(task_id)
 
         if task is None:

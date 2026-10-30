@@ -1,7 +1,9 @@
+from collections.abc import AsyncGenerator
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -178,4 +180,57 @@ async def delete_notification(
 
     return MessageResponse(
         message="Notification deleted successfully",
+    )
+
+
+@router.get(
+    "/stream",
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+    },
+)
+async def stream_notifications(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> StreamingResponse:
+    redis = request.app.state.redis
+    channel = f"notifications:{current_user.id}"
+
+    async def event_generator() -> AsyncGenerator[str, None]:
+        pubsub = redis.pubsub()
+
+        try:
+            await pubsub.subscribe(channel)
+
+            yield "retry: 5000\n\n"
+
+            while True:
+                if await request.is_disconnected():
+                    break
+
+                message = await pubsub.get_message(
+                    ignore_subscribe_messages=True,
+                    timeout=15.0,
+                )
+
+                if message is None:
+                    yield ": heartbeat\n\n"
+                    continue
+
+                if message["type"] == "message":
+                    data = message["data"]
+
+                    yield f"event: notification\ndata: {data}\n\n"
+
+        finally:
+            await pubsub.unsubscribe(channel)
+            await pubsub.aclose()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )

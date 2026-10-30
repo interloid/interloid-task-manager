@@ -1,3 +1,4 @@
+import json
 from uuid import UUID
 
 from app.enums import NotificationStatus, NotificationType
@@ -47,9 +48,33 @@ class NotificationService:
             message=message,
         )
 
-        return await self.notification_repository.create(
+        saved_notification = await self.notification_repository.create(
             notification=notification,
         )
+
+        event_data = {
+            "id": str(saved_notification.id),
+            "type": saved_notification.type.value,
+            "title": saved_notification.title,
+            "message": saved_notification.message,
+            "task_id": (
+                str(saved_notification.task_id) if saved_notification.task_id else None
+            ),
+            "status": saved_notification.status.value,
+            "created_at": saved_notification.created_at.isoformat(),
+        }
+        pending_events = self.notification_repository.session.info.setdefault(
+            "pending_notification_events", []
+        )
+
+        pending_events.append(
+            {
+                "user_id": str(saved_notification.user_id),
+                "data": json.dumps(event_data),
+            }
+        )
+
+        return saved_notification
 
     async def get_user_notifications(
         self,

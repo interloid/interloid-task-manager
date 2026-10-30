@@ -9,7 +9,6 @@ from app.api.responses import (
     NOT_FOUND_RESPONSE,
     UNAUTHORIZED_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
-    NOT_FOUND_RESPONSE,
 )
 from app.db.dependencies import get_db
 from app.models import User
