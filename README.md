@@ -279,6 +279,38 @@ The maximum allowed `limit` is:
 ```text
 100
 ```
+###  Task comments
+
+```
+POST /api/v1/tasks/{task_id}/comments
+GET  /api/v1/tasks/{task_id}/comments
+PATCH /api/v1/tasks/{task_id}/comments/{comment_id}
+DELETE /api/v1/tasks/{task_id}/comments/{comment_id}
+```
+
+### Task Attachments
+
+```
+POST /api/v1/tasks/{task_id}/attachments
+GET  /api/v1/tasks/{task_id}/attachments
+GET  /api/v1/tasks/{task_id}/attachments/{attachment_id}
+DELETE /api/v1/tasks/{task_id}/attachments/{attachment_id}
+GET /api/v1/tasks/{task_id}/attachments/{attachment_id}/download
+
+```
+###  Notifications
+
+```
+GET  /api/v1/notifications
+DELETE  /api/v1/notifications
+PATCH  /api/v1/notifications/{id}/read
+GET  /api/v1/notifications/unread-count
+PATCH  /api/v1/notifications/read-all
+DELETE  /api/v1/notifications/{id}
+GET  /api/v1/notifications/stream
+
+```
+
 
 ### Health Checks
 
@@ -402,19 +434,19 @@ The seed data is intended only for local development, testing, and demonstration
 #### Admin Account
 
 ```text
-Email: amaldas@example.com
+Email: das171018@gmail.com
 Password: pass1234
 ```
 
 #### User Accounts
 
 ```text
-Email: naveen@example.com
+Email: amaldas7639@gmail.com
 Password: pass1234
 ```
 
 ```text
-Email: jeffy@example.com
+Email: naveen@example.com
 Password: pass1234
 ```
 

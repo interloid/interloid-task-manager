@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
+from redis.asyncio import Redis
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.v1.api import api_router
@@ -27,11 +28,24 @@ setup_logging()
 async def lifespan(app: FastAPI):
     await check_database_connection()
     logger.info("Database connected successfully")
-    logger.info("Application started")
 
-    yield
+    redis_client = Redis.from_url(
+        settings.REDIS_URL,
+        decode_responses=True,
+    )
 
-    logger.info("Application stopped")
+    try:
+        await redis_client.ping()
+        app.state.redis = redis_client
+
+        logger.info("Redis connected successfully")
+        logger.info("Application started")
+
+        yield
+
+    finally:
+        await redis_client.aclose()
+        logger.info("Application stopped")
 
 
 app = FastAPI(

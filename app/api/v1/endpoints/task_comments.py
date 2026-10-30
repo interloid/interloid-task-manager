@@ -9,11 +9,14 @@ from app.api.responses import (
     NOT_FOUND_RESPONSE,
     UNAUTHORIZED_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
-    NOT_FOUND_RESPONSE,
 )
 from app.db.dependencies import get_db
 from app.models import User
-from app.repositories import TaskCommentRepository, TaskRepository
+from app.repositories import (
+    NotificationRepository,
+    TaskCommentRepository,
+    TaskRepository,
+)
 from app.schemas import (
     APIResponse,
     MessageResponse,
@@ -22,6 +25,7 @@ from app.schemas import (
     TaskCommentResponse,
     TaskCommentUpdateRequest,
 )
+from app.services.notification import NotificationService
 from app.services.task_comment_service import TaskCommentService
 
 router = APIRouter(
@@ -36,6 +40,10 @@ def get_task_comment_service(
     return TaskCommentService(
         task_repository=TaskRepository(db),
         comment_repository=TaskCommentRepository(db),
+        notification_service=NotificationService(
+            notification_repository=NotificationRepository(db),
+            task_repository=TaskRepository(db),
+        ),
     )
 
 

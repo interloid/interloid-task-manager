@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from app.enums import RoleName
+from app.enums import NotificationType, RoleName
 from app.exceptions.task import TaskNotFoundException
 from app.exceptions.task_comment import TaskCommentNotFoundException
-from app.models import TaskComment, User, Task
+from app.models import Task, TaskComment, User
 from app.repositories import TaskCommentRepository, TaskRepository
 from app.schemas import (
     PaginatedResponse,
@@ -12,6 +12,8 @@ from app.schemas import (
     TaskCommentResponse,
     TaskCommentUpdateRequest,
 )
+from app.services.notification import NotificationService
+from app.workers.email_queue import enqueue_email
 
 
 class TaskCommentService:
@@ -19,9 +21,11 @@ class TaskCommentService:
         self,
         task_repository: TaskRepository,
         comment_repository: TaskCommentRepository,
+        notification_service: NotificationService,
     ) -> None:
         self.task_repository = task_repository
         self.comment_repository = comment_repository
+        self.notification_service = notification_service
 
     async def create_comment(
         self,
@@ -30,10 +34,13 @@ class TaskCommentService:
         current_user: User,
         request: TaskCommentCreateRequest,
     ) -> TaskCommentResponse:
-        await self._get_authorized_task(
-            task_id=task_id,
-            current_user=current_user,
-        )
+        task = await self.task_repository.get_by_id_with_owner(task_id)
+
+        if task is None:
+            raise TaskNotFoundException()
+
+        if current_user.role != RoleName.ADMIN and task.owner_id != current_user.id:
+            raise TaskNotFoundException()
 
         comment = TaskComment(
             task_id=task_id,
@@ -43,6 +50,26 @@ class TaskCommentService:
 
         comment = await self.comment_repository.create(comment)
 
+        if current_user.role == RoleName.ADMIN and task.owner_id != current_user.id:
+            await self.notification_service.create_notification(
+                recipient_id=task.owner_id,
+                task_id=task_id,
+                notification_type=NotificationType.TASK_COMMENTED,
+                title="New comment on your task",
+                message=f"{current_user.email} commented on your task.",
+            )
+            await enqueue_email(
+                to_email=task.owner.email,
+                subject="New comment on your task",
+                text_body=(
+                    f"{current_user.email} commented on your task '{task.title}'."
+                ),
+                html_body=(
+                    "<h2>New comment on your task</h2>"
+                    f"<p>{current_user.email} commented on your task "
+                    f"<strong>{task.title}</strong>.</p>"
+                ),
+            )
         return TaskCommentResponse.model_validate(comment)
 
     async def list_comments(
@@ -135,7 +162,7 @@ class TaskCommentService:
         *,
         task_id: UUID,
         current_user: User,
-    ) -> Task :
+    ) -> Task:
         task = await self.task_repository.get_by_id(task_id)
 
         if task is None:

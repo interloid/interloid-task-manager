@@ -1,0 +1,22 @@
+
+services:
+  api:
+    image: amaldas12345/interloid-task-manager:v1.2.8
+    container_name: interloid-task-manager-api
+    env_file:
+      - .env.production
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  email-worker:
+    image: amaldas12345/interloid-task-manager:v1.2.8
+    container_name: interloid-task-manager-worker
+    env_file:
+      - .env.production
+    command:
+      - uv
+      - run
+      - arq
+      - app.workers.email_worker.WorkerSettings
+    restart: unless-stopped
