@@ -1,3 +1,4 @@
+from html import escape
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +25,6 @@ from app.schemas import (
 )
 from app.services.notification import NotificationService
 from app.services.s3_storage_service import S3StorageService
-from app.workers.email_queue import enqueue_email
 
 
 class TaskService:
@@ -77,21 +77,30 @@ class TaskService:
                 title="New task assigned to you",
                 message=f"A new task '{task.title}' has been assigned to you.",
             )
-            await enqueue_email(
-                to_email=assigned_user.email,
-                subject="A new task has been assigned to you",
-                text_body=(
-                    f"Hello,\n\n"
-                    f"A new task '{task.title}' has been assigned to you.\n\n"
-                    "Please log in to the Task Manager to review the task."
-                ),
-                html_body=(
-                    "<h2>A new task has been assigned to you</h2>"
-                    f"<p>A new task <strong>{task.title}</strong> "
-                    "has been assigned to you.</p>"
-                    "<p>Please log in to the Task Manager "
-                    "to review the task.</p>"
-                ),
+
+            safe_title = escape(task.title)
+
+            pending_emails = self.task_repository.session.info.setdefault(
+                "pending_email_jobs",
+                [],
+            )
+            pending_emails.append(
+                {
+                    "to_email": assigned_user.email,
+                    "subject": "A new task has been assigned to you",
+                    "text_body": (
+                        f"Hello,\n\n"
+                        f"A new task '{task.title}' has been assigned to you.\n\n"
+                        "Please log in to the Task Manager to review the task."
+                    ),
+                    "html_body": (
+                        "<h2>A new task has been assigned to you</h2>"
+                        f"<p>A new task <strong>{safe_title}</strong> "
+                        "has been assigned to you.</p>"
+                        "<p>Please log in to the Task Manager "
+                        "to review the task.</p>"
+                    ),
+                }
             )
 
         return TaskResponse.model_validate(task)

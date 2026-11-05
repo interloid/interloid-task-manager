@@ -16,7 +16,7 @@ async def test_create_task_comment(
     user_headers: dict[str, str],
 ) -> None:
     with patch(
-        "app.services.task_comment_service.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
     ) as mock_enqueue_email:
         response = await client.post(
@@ -95,7 +95,7 @@ async def test_admin_comment_creates_notification_for_task_owner(
     db_session,
 ) -> None:
     with patch(
-        "app.services.task_comment_service.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
     ) as mock_enqueue_email:
         response = await client.post(

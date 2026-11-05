@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 
+from arq import create_pool
+from arq.connections import RedisSettings
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from redis.asyncio import Redis
@@ -39,11 +41,18 @@ async def lifespan(app: FastAPI):
         app.state.redis = redis_client
 
         logger.info("Redis connected successfully")
+        arq_pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
+        app.state.arq_pool = arq_pool
+
+        logger.info("ARQ Redis pool connected successfully")
         logger.info("Application started")
 
         yield
 
     finally:
+        if hasattr(app.state, "arq_pool"):
+            await app.state.arq_pool.aclose()
+
         await redis_client.aclose()
         logger.info("Application stopped")
 

@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
@@ -12,6 +12,7 @@ from app.api.responses import (
     VALIDATION_ERROR_RESPONSE,
 )
 from app.db.dependencies import get_db
+from app.exceptions.notification import SSEConnectionLimitExceededException
 from app.models import User
 from app.repositories import NotificationRepository, TaskRepository
 from app.schemas import (
@@ -22,6 +23,7 @@ from app.schemas import (
     PaginatedResponse,
 )
 from app.services.notification import NotificationService
+from app.services.sse_connection_manager import SSEConnectionManager
 
 router = APIRouter(
     prefix="/notifications",
@@ -55,7 +57,7 @@ async def get_notifications(
 ) -> PaginatedResponse[NotificationResponse]:
     service = get_notification_service(db)
 
-    Query = NotificationListQuery(
+    query = NotificationListQuery(
         page=page,
         page_size=page_size,
         is_read=is_read,
@@ -63,7 +65,7 @@ async def get_notifications(
 
     return await service.get_user_notifications(
         current_user=current_user,
-        query=Query,
+        query=query,
     )
 
 
@@ -195,11 +197,22 @@ async def stream_notifications(
 ) -> StreamingResponse:
     redis = request.app.state.redis
     channel = f"notifications:{current_user.id}"
+    connection_manager = SSEConnectionManager(redis)
+    connection_id = str(uuid4())
+
+    acquired = await connection_manager.acquire(
+        str(current_user.id),
+        connection_id,
+    )
+
+    if not acquired:
+        raise SSEConnectionLimitExceededException()
 
     async def event_generator() -> AsyncGenerator[str, None]:
-        pubsub = redis.pubsub()
+        pubsub = None
 
         try:
+            pubsub = redis.pubsub()
             await pubsub.subscribe(channel)
 
             yield "retry: 5000\n\n"
@@ -213,6 +226,14 @@ async def stream_notifications(
                     timeout=15.0,
                 )
 
+                renewed = await connection_manager.renew(
+                    str(current_user.id),
+                    connection_id,
+                )
+
+                if not renewed:
+                    break
+
                 if message is None:
                     yield ": heartbeat\n\n"
                     continue
@@ -223,8 +244,17 @@ async def stream_notifications(
                     yield f"event: notification\ndata: {data}\n\n"
 
         finally:
-            await pubsub.unsubscribe(channel)
-            await pubsub.aclose()
+            try:
+                if pubsub is not None:
+                    try:
+                        await pubsub.unsubscribe(channel)
+                    finally:
+                        await pubsub.aclose()
+            finally:
+                await connection_manager.release(
+                    str(current_user.id),
+                    connection_id,
+                )
 
     return StreamingResponse(
         event_generator(),

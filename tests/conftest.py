@@ -1,10 +1,14 @@
+import logging
 import os
 from collections.abc import AsyncGenerator
+from unittest.mock import AsyncMock
 
 import pytest
+from fastapi import Request
 from httpx import ASGITransport, AsyncClient
 from limits.aio.storage import MemoryStorage
 from limits.aio.strategies import MovingWindowRateLimiter
+from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -16,12 +20,17 @@ from uuid6 import uuid7
 from app.core.config import settings
 from app.core.rate_limit import login_rate_limiter
 from app.core.security import hash_password
+from app.db import dependencies as db_dependencies
 from app.db.dependencies import get_db
 from app.enums import RoleName, TaskPriority, TaskStatus
 from app.mail.dependencies import get_mailer
 from app.mail.fake import FakeMailer
 from app.main import app
 from app.models import Task, User
+
+app.state.arq_pool = AsyncMock()
+
+logger = logging.getLogger(__name__)
 
 
 def validate_test_database() -> None:
@@ -45,11 +54,39 @@ TestSessionLocal = async_sessionmaker(
 )
 
 
-async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+async def override_get_db(
+    request: Request,
+) -> AsyncGenerator[AsyncSession, None]:
     async with TestSessionLocal() as session:
         try:
             yield session
             await session.commit()
+            pending_emails = session.info.pop("pending_email_jobs", [])
+
+            for email_data in pending_emails:
+                try:
+                    await db_dependencies.enqueue_email(
+                        request.app.state.arq_pool,
+                        **email_data,
+                    )
+                except Exception:
+                    logger.exception("Failed to enqueue email job")
+
+            redis = getattr(request.app.state, "redis", None)
+            pending_events = session.info.pop(
+                "pending_notification_events",
+                [],
+            )
+
+            if redis is not None:
+                for event in pending_events:
+                    try:
+                        await redis.publish(
+                            f"notifications:{event['user_id']}",
+                            event["data"],
+                        )
+                    except Exception:
+                        logger.exception("Failed to publish notification event")
         except Exception:
             await session.rollback()
             raise
@@ -313,3 +350,18 @@ def override_mailer():
     yield
 
     app.dependency_overrides.pop(get_mailer, None)
+
+
+@pytest.fixture
+async def test_redis() -> AsyncGenerator[Redis, None]:
+    redis = Redis.from_url(
+        settings.REDIS_URL,
+        decode_responses=True,
+    )
+
+    app.state.redis = redis
+
+    yield redis
+
+    await redis.aclose()
+    del app.state.redis

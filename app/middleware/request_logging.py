@@ -10,18 +10,21 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
 
-        request_id = getattr(
-            request.state,
-            "request_id",
-            "unknown",
-        )
+        status_code = response.status_code
 
-        logger.info(
-            "request_id=%s | %s %s - %d",
-            request_id,
+        if status_code >= 500:
+            log_level = logging.ERROR
+        elif status_code >= 400:
+            log_level = logging.WARNING
+        else:
+            log_level = logging.INFO
+
+        logger.log(
+            log_level,
+            "%s %s - %d",
             request.method,
             request.url.path,
-            response.status_code,
+            status_code,
         )
 
         return response

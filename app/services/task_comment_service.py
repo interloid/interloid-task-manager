@@ -1,3 +1,4 @@
+from html import escape
 from uuid import UUID
 
 from app.enums import NotificationType, RoleName
@@ -13,7 +14,6 @@ from app.schemas import (
     TaskCommentUpdateRequest,
 )
 from app.services.notification import NotificationService
-from app.workers.email_queue import enqueue_email
 
 
 class TaskCommentService:
@@ -58,17 +58,27 @@ class TaskCommentService:
                 title="New comment on your task",
                 message=f"{current_user.email} commented on your task.",
             )
-            await enqueue_email(
-                to_email=task.owner.email,
-                subject="New comment on your task",
-                text_body=(
-                    f"{current_user.email} commented on your task '{task.title}'."
-                ),
-                html_body=(
-                    "<h2>New comment on your task</h2>"
-                    f"<p>{current_user.email} commented on your task "
-                    f"<strong>{task.title}</strong>.</p>"
-                ),
+            safe_title = escape(task.title)
+            safe_email = escape(current_user.email)
+
+            pending_emails = self.comment_repository.session.info.setdefault(
+                "pending_email_jobs",
+                [],
+            )
+
+            pending_emails.append(
+                {
+                    "to_email": task.owner.email,
+                    "subject": "New comment on your task",
+                    "text_body": (
+                        f"{current_user.email} commented on your task '{task.title}'."
+                    ),
+                    "html_body": (
+                        "<h2>New comment on your task</h2>"
+                        f"<p>{safe_email} commented on your task "
+                        f"<strong>{safe_title}</strong>.</p>"
+                    ),
+                }
             )
         return TaskCommentResponse.model_validate(comment)
 

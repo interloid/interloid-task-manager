@@ -62,7 +62,7 @@ async def test_admin_assigns_task_and_queues_email(
     db_session,
 ) -> None:
     with patch(
-        "app.services.task.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
     ) as mock_enqueue_email:
         response = await client.post(
@@ -109,7 +109,7 @@ async def test_admin_assigns_task_to_nonexistent_user(
     admin_headers: dict[str, str],
 ) -> None:
     with patch(
-        "app.services.task.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
     ) as mock_enqueue_email:
         response = await client.post(
@@ -132,7 +132,7 @@ async def test_normal_user_creates_task_without_assignment_email(
     test_user: User,
 ) -> None:
     with patch(
-        "app.services.task.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
     ) as mock_enqueue_email:
         response = await client.post(
@@ -160,7 +160,7 @@ async def test_normal_user_cannot_assign_task_to_another_user(
     second_user: User,
 ) -> None:
     with patch(
-        "app.services.task.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
     ) as mock_enqueue_email:
         response = await client.post(
@@ -187,29 +187,27 @@ async def test_admin_assignment_fails_when_email_queue_is_unavailable(
     admin_headers: dict[str, str],
     test_user: User,
 ) -> None:
+    task_title = "Task when Redis is down"
+
     with patch(
-        "app.services.task.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
         side_effect=RuntimeError("Redis is unavailable"),
     ) as mock_enqueue_email:
-        with pytest.raises(
-            RuntimeError,
-            match="Redis is unavailable",
-        ):
-            await client.post(
-                "/api/v1/tasks",
-                headers=admin_headers,
-                json={
-                    "title": "Task when Redis is down",
-                    "owner_id": str(test_user.id),
-                },
-            )
-
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=admin_headers,
+            json={
+                "title": task_title,
+                "owner_id": str(test_user.id),
+            },
+        )
+    assert response.status_code == 201
     mock_enqueue_email.assert_awaited_once()
 
 
 @pytest.mark.anyio
-async def test_admin_assignment_rolls_back_when_email_queue_fails(
+async def test_admin_assignment_succeeds_when_email_queue_fails(
     client: AsyncClient,
     admin_headers: dict[str, str],
     test_user: User,
@@ -217,22 +215,20 @@ async def test_admin_assignment_rolls_back_when_email_queue_fails(
     task_title = "Task when Redis is down"
 
     with patch(
-        "app.services.task.enqueue_email",
+        "app.db.dependencies.enqueue_email",
         new_callable=AsyncMock,
         side_effect=RuntimeError("Redis is unavailable"),
     ) as mock_enqueue_email:
-        with pytest.raises(
-            RuntimeError,
-            match="Redis is unavailable",
-        ):
-            await client.post(
-                "/api/v1/tasks",
-                headers=admin_headers,
-                json={
-                    "title": task_title,
-                    "owner_id": str(test_user.id),
-                },
-            )
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=admin_headers,
+            json={
+                "title": task_title,
+                "owner_id": str(test_user.id),
+            },
+        )
+
+        assert response.status_code == 201
 
     mock_enqueue_email.assert_awaited_once()
 
@@ -240,12 +236,19 @@ async def test_admin_assignment_rolls_back_when_email_queue_fails(
         task_result = await verification_session.execute(
             select(Task).where(Task.title == task_title)
         )
-        assert task_result.scalar_one_or_none() is None
+        task = task_result.scalar_one_or_none()
+
+        assert task is not None
+        assert task.owner_id == test_user.id
 
         notification_result = await verification_session.execute(
             select(Notification).where(
                 Notification.user_id == test_user.id,
+                Notification.task_id == task.id,
                 Notification.title == "New task assigned to you",
             )
         )
-        assert notification_result.scalars().all() == []
+
+        notification = notification_result.scalar_one_or_none()
+
+        assert notification is not None
