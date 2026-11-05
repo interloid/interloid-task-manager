@@ -15,6 +15,7 @@ class TaskCreateRequest(BaseModel):
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
     due_date: date | None = None
+    owner_id: UUID | None = None
 
     @field_validator("title", mode="before")
     @classmethod

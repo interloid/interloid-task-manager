@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.enums.task import SortOrder, TaskPriority, TaskSortBy, TaskStatus
 from app.models.task import Task
@@ -101,3 +102,12 @@ class TaskRepository(BaseRepository[Task]):
         await self.session.refresh(task)
 
         return task
+
+    async def get_by_id_with_owner(
+        self,
+        task_id: UUID,
+    ) -> Task | None:
+        stmt = select(Task).options(selectinload(Task.owner)).where(Task.id == task_id)
+        result = await self.session.execute(stmt)
+
+        return result.scalar_one_or_none()

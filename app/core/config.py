@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     REDIS_URL: str
     REDIS_KEY_PREFIX: str
 
+    MAX_SSE_CONNECTIONS: int = 3
+    SSE_CONNECTION_TTL: int = 60
+
+    SSE_CONNECTION_KEY_PREFIX: str = "sse_connections"
+
     SECRET_KEY: SecretStr
 
     FRONTEND_URL: str = "http://localhost:5173"

@@ -21,6 +21,11 @@ from app.schemas.common import (
     PaginatedResponse,
     PaginationMeta,
 )
+from app.schemas.notification import (
+    NotificationCreateRequest,
+    NotificationListQuery,
+    NotificationResponse,
+)
 from app.schemas.task import (
     TaskCreateRequest,
     TaskListQuery,
@@ -46,6 +51,9 @@ __all__ = [
     "LoginResponse",
     "LogoutRequest",
     "MessageResponse",
+    "NotificationCreateRequest",
+    "NotificationListQuery",
+    "NotificationResponse",
     "PaginatedResponse",
     "PaginationMeta",
     "RefreshRequest",

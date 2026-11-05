@@ -47,7 +47,7 @@ async def create_task(
 
     task = await service.create_task(
         request=request,
-        owner_id=current_user.id,
+        current_user=current_user,
     )
 
     return APIResponse(
