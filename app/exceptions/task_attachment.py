@@ -30,7 +30,7 @@ class AttachmentTooLargeException(AppException):
         super().__init__(
             message="File exceeds the maximum allowed size",
             code="FILE_TOO_LARGE",
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
         )
 
 

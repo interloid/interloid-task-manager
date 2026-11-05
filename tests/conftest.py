@@ -133,7 +133,10 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     async with TestSessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.rollback()
 
 
 @pytest.fixture
