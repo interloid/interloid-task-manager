@@ -51,7 +51,7 @@ async def test_rejects_connection_when_limit_is_reached() -> None:
     try:
         connection_ids = [str(uuid4()) for _ in range(4)]
 
-        for connection_id in connection_ids[:settings.MAX_SSE_CONNECTIONS]:
+        for connection_id in connection_ids[: settings.MAX_SSE_CONNECTIONS]:
             result = await manager.acquire(user_id, connection_id)
             assert result is True
 
@@ -75,7 +75,7 @@ async def test_release_connection_frees_slot() -> None:
     try:
         connection_ids = [str(uuid4()) for _ in range(4)]
 
-        for connection_id in connection_ids[:settings.MAX_SSE_CONNECTIONS]:
+        for connection_id in connection_ids[: settings.MAX_SSE_CONNECTIONS]:
             assert await manager.acquire(user_id, connection_id) is True
 
         await manager.release(user_id, connection_ids[0])
@@ -136,5 +136,3 @@ async def test_expired_connection_cannot_be_renewed() -> None:
     finally:
         await redis.delete(key)
         await redis.aclose()
-
-    

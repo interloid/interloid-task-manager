@@ -1,9 +1,9 @@
-import pytest
-from httpx import AsyncClient
-from uuid import uuid4
 from unittest.mock import AsyncMock
+from uuid import uuid4
 
+import pytest
 from fastapi import Request
+from httpx import AsyncClient
 
 from app.core.config import settings
 from app.models import User
@@ -22,8 +22,7 @@ async def test_rejects_connection_when_limit_is_reached(
     key = f"{settings.SSE_CONNECTION_KEY_PREFIX}:{user_id}"
 
     connection_ids = [
-        f"test-connection-{index}"
-        for index in range(settings.MAX_SSE_CONNECTIONS)
+        f"test-connection-{index}" for index in range(settings.MAX_SSE_CONNECTIONS)
     ]
 
     try:
@@ -42,10 +41,7 @@ async def test_rejects_connection_when_limit_is_reached(
         assert response.status_code == 429
 
         response_data = response.json()
-        assert (
-            response_data["error"]["code"]
-            == "SSE_CONNECTION_LIMIT_EXCEEDED"
-        )
+        assert response_data["error"]["code"] == "SSE_CONNECTION_LIMIT_EXCEEDED"
 
     finally:
         await redis.delete(key)
@@ -56,20 +52,16 @@ async def test_released_connection_allows_new_connection(
     test_redis,
     test_user: User,
 ) -> None:
-
     redis = test_redis
     manager = SSEConnectionManager(redis)
 
     user_id = str(test_user.id)
     key = f"{settings.SSE_CONNECTION_KEY_PREFIX}:{user_id}"
 
-    connection_ids = [
-        str(uuid4())
-        for _ in range(settings.MAX_SSE_CONNECTIONS + 1)
-    ]
+    connection_ids = [str(uuid4()) for _ in range(settings.MAX_SSE_CONNECTIONS + 1)]
 
     try:
-        for connection_id in connection_ids[:settings.MAX_SSE_CONNECTIONS]:
+        for connection_id in connection_ids[: settings.MAX_SSE_CONNECTIONS]:
             assert await manager.acquire(user_id, connection_id) is True
 
         await manager.release(user_id, connection_ids[0])
@@ -84,6 +76,7 @@ async def test_released_connection_allows_new_connection(
 
     finally:
         await redis.delete(key)
+
 
 @pytest.mark.anyio
 async def test_sse_stream_connects_and_releases_connection(
@@ -126,10 +119,3 @@ async def test_sse_stream_connects_and_releases_connection(
     pubsub.subscribe.assert_awaited_once()
     pubsub.unsubscribe.assert_awaited_once()
     pubsub.aclose.assert_awaited_once()
-
-
-
-
-
-
-    
