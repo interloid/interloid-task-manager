@@ -132,7 +132,7 @@ async def test_logged_out_refresh_token_cannot_be_refreshed(
     assert refresh_response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_logout_all_revokes_all_refresh_tokens(
     client: AsyncClient,
     test_user: User,
@@ -191,7 +191,7 @@ async def test_logout_all_revokes_all_refresh_tokens(
     assert second_refresh_response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_logout_all_requires_authentication(
     client: AsyncClient,
 ) -> None:
@@ -202,7 +202,7 @@ async def test_logout_all_requires_authentication(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_logout_invalidates_access_token(
     client: AsyncClient,
     test_user: User,
@@ -241,7 +241,7 @@ async def test_logout_invalidates_access_token(
     assert me_response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_logout_all_invalidates_existing_access_tokens(
     client: AsyncClient,
     test_user: User,

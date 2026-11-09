@@ -6,7 +6,7 @@ from app.models.user import User
 from tests.utils.notification import create_notification
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_get_unread_notification_count(
     client: AsyncClient,
     test_user: User,
@@ -29,7 +29,7 @@ async def test_user_can_get_unread_notification_count(
     assert body["data"]["unread_count"] == 2
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unread_count_is_zero_when_no_unread_notifications(
     client: AsyncClient,
     test_user: User,
@@ -56,7 +56,7 @@ async def test_unread_count_is_zero_when_no_unread_notifications(
     assert response.json()["data"]["unread_count"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unread_count_excludes_read_notifications(
     client: AsyncClient,
     test_user: User,
@@ -81,7 +81,7 @@ async def test_unread_count_excludes_read_notifications(
     assert response.json()["data"]["unread_count"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unread_count_includes_only_current_users_notifications(
     client: AsyncClient,
     test_user: User,
@@ -109,7 +109,7 @@ async def test_unread_count_includes_only_current_users_notifications(
     assert second_response.json()["data"]["unread_count"] == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_get_unread_count(
     client: AsyncClient,
 ) -> None:

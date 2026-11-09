@@ -10,7 +10,7 @@ from app.models import User
 from app.services.sse_connection_manager import SSEConnectionManager
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_rejects_connection_when_limit_is_reached(
     client: AsyncClient,
     user_headers: dict[str, str],
@@ -47,7 +47,7 @@ async def test_rejects_connection_when_limit_is_reached(
         await redis.delete(key)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_released_connection_allows_new_connection(
     test_redis,
     test_user: User,
@@ -78,7 +78,7 @@ async def test_released_connection_allows_new_connection(
         await redis.delete(key)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_sse_stream_connects_and_releases_connection(
     client: AsyncClient,
     test_user: User,

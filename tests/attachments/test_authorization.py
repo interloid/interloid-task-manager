@@ -12,7 +12,7 @@ from app.models.task_attachment import TaskAttachment
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_access_another_users_attachment(
     client: AsyncClient,
     test_user: User,

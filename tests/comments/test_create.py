@@ -9,7 +9,7 @@ from app.enums import NotificationType
 from app.models import Notification, Task, User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_create_task_comment(
     client: AsyncClient,
     test_task: Task,
@@ -41,7 +41,7 @@ async def test_create_task_comment(
     mock_enqueue_email.assert_not_awaited()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_create_comment_with_blank_content_returns_422(
     client: AsyncClient,
     test_task: Task,
@@ -56,7 +56,7 @@ async def test_create_comment_with_blank_content_returns_422(
     assert response.status_code == 422
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_create_comment_with_whitespace_returns_422(
     client: AsyncClient,
     test_task: Task,
@@ -71,7 +71,7 @@ async def test_create_comment_with_whitespace_returns_422(
     assert response.status_code == 422
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_create_comment_exceeding_max_length_returns_422(
     client: AsyncClient,
     test_task: Task,
@@ -86,7 +86,7 @@ async def test_create_comment_exceeding_max_length_returns_422(
     assert response.status_code == 422
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_comment_creates_notification_for_task_owner(
     client: AsyncClient,
     test_task: Task,
@@ -129,7 +129,7 @@ async def test_admin_comment_creates_notification_for_task_owner(
     assert notification.message == "admin@example.com commented on your task."
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_owner_comment_does_not_create_notification(
     client: AsyncClient,
     test_task: Task,
@@ -158,7 +158,7 @@ async def test_owner_comment_does_not_create_notification(
     assert notification is None
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_other_user_cannot_comment_on_another_users_task(
     client: AsyncClient,
     test_task: Task,

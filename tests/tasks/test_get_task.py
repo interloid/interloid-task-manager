@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_get_own_task_by_id(
     client: AsyncClient,
     test_user: User,
@@ -65,7 +65,7 @@ async def test_user_can_get_own_task_by_id(
     assert task["due_date"] == "2026-09-10"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_task_by_id_returns_404_for_unknown_task(
     client: AsyncClient,
     test_user: User,
@@ -102,7 +102,7 @@ async def test_get_task_by_id_returns_404_for_unknown_task(
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_get_another_users_task(
     client: AsyncClient,
     test_user: User,
@@ -170,7 +170,7 @@ async def test_user_cannot_get_another_users_task(
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_get_another_users_task(
     client: AsyncClient,
     admin_user: User,

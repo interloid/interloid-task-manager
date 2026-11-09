@@ -6,7 +6,7 @@ from app.models.user import User
 from tests.utils.notification import create_notification
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_delete_own_notification(
     client: AsyncClient,
     test_user: User,
@@ -35,7 +35,7 @@ async def test_user_can_delete_own_notification(
     assert str(notification.id) not in notification_ids
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_deleting_nonexistent_notification_returns_404(
     client: AsyncClient,
     test_user: User,
@@ -63,7 +63,7 @@ async def test_deleting_nonexistent_notification_returns_404(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_delete_another_users_notification(
     client: AsyncClient,
     test_user: User,
@@ -92,7 +92,7 @@ async def test_user_cannot_delete_another_users_notification(
     assert str(notification.id) in owner_notification_ids
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_delete_notification(
     client: AsyncClient,
 ) -> None:
@@ -103,7 +103,7 @@ async def test_unauthenticated_user_cannot_delete_notification(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_deleting_notification_twice_returns_404(
     client: AsyncClient,
     test_user: User,

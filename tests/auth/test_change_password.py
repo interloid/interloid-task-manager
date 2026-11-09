@@ -246,7 +246,7 @@ async def test_change_password_with_same_password_returns_422(
     assert body["error"]["code"] == "SAME_PASSWORD"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_old_access_token_invalid_after_password_change(
     client: AsyncClient,
     test_user: User,
@@ -286,7 +286,7 @@ async def test_old_access_token_invalid_after_password_change(
     assert me_response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_new_access_token_valid_after_password_change(
     client: AsyncClient,
     test_user: User,

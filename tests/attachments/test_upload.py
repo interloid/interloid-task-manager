@@ -39,7 +39,7 @@ async def create_task_and_get_token(
     return task, access_token
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_upload_attachment_success(
     client: AsyncClient,
     test_user: User,
@@ -94,7 +94,7 @@ async def test_upload_attachment_success(
     mock_storage.assert_awaited_once()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_upload_attachment_too_large(
     client: AsyncClient,
     test_user: User,
@@ -125,7 +125,7 @@ async def test_upload_attachment_too_large(
     assert response.json()["success"] is False
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_upload_attachment_unsupported_type(
     client: AsyncClient,
     test_user: User,
@@ -149,7 +149,7 @@ async def test_upload_attachment_unsupported_type(
     assert response.json()["success"] is False
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_upload_attachment_empty_file(
     client: AsyncClient,
     test_user: User,
@@ -169,7 +169,7 @@ async def test_upload_attachment_empty_file(
     assert response.json()["success"] is False
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_upload_attachment_missing_filename(
     client: AsyncClient,
     test_user: User,
@@ -189,7 +189,7 @@ async def test_upload_attachment_missing_filename(
     assert response.json()["success"] is False
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_upload_attachment_filename_too_long(
     client: AsyncClient,
     test_user: User,

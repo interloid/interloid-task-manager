@@ -9,7 +9,7 @@ from app.models import Notification, Task, User
 from tests.conftest import TestSessionLocal
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_create_task_success(
     client: AsyncClient,
     test_user: User,
@@ -54,7 +54,7 @@ async def test_create_task_success(
     assert body["data"]["owner_id"] == str(test_user.id)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_assigns_task_and_queues_email(
     client: AsyncClient,
     admin_headers: dict[str, str],
@@ -103,7 +103,7 @@ async def test_admin_assigns_task_and_queues_email(
     assert notification.title == "New task assigned to you"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_assigns_task_to_nonexistent_user(
     client: AsyncClient,
     admin_headers: dict[str, str],
@@ -125,7 +125,7 @@ async def test_admin_assigns_task_to_nonexistent_user(
     mock_enqueue_email.assert_not_awaited()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_normal_user_creates_task_without_assignment_email(
     client: AsyncClient,
     user_headers: dict[str, str],
@@ -152,7 +152,7 @@ async def test_normal_user_creates_task_without_assignment_email(
     mock_enqueue_email.assert_not_awaited()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_normal_user_cannot_assign_task_to_another_user(
     client: AsyncClient,
     user_headers: dict[str, str],
@@ -181,7 +181,7 @@ async def test_normal_user_cannot_assign_task_to_another_user(
     mock_enqueue_email.assert_not_awaited()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_assignment_fails_when_email_queue_is_unavailable(
     client: AsyncClient,
     admin_headers: dict[str, str],
@@ -206,7 +206,7 @@ async def test_admin_assignment_fails_when_email_queue_is_unavailable(
     mock_enqueue_email.assert_awaited_once()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_assignment_succeeds_when_email_queue_fails(
     client: AsyncClient,
     admin_headers: dict[str, str],

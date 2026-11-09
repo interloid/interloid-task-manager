@@ -6,7 +6,7 @@ from app.models.user import User
 from tests.utils.notification import create_notification
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_delete_all_read_notifications(
     client: AsyncClient,
     test_user: User,
@@ -47,7 +47,7 @@ async def test_user_can_delete_all_read_notifications(
     assert str(notifications[1].id) not in remaining_ids
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_delete_read_notifications_succeeds_when_none_exist(
     client: AsyncClient,
     test_user: User,
@@ -74,7 +74,7 @@ async def test_delete_read_notifications_succeeds_when_none_exist(
     assert response.json()["success"] is True
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_delete_read_notifications_preserves_unread_notifications(
     client: AsyncClient,
     test_user: User,
@@ -102,7 +102,7 @@ async def test_delete_read_notifications_preserves_unread_notifications(
     assert str(notification.id) in remaining_ids
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_delete_read_notifications_only_affects_current_user(
     client: AsyncClient,
     test_user: User,
@@ -139,7 +139,7 @@ async def test_delete_read_notifications_only_affects_current_user(
     assert str(notification.id) in remaining_ids
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_delete_read_notifications(
     client: AsyncClient,
 ) -> None:

@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_update_own_task(
     client: AsyncClient,
     test_user: User,
@@ -71,7 +71,7 @@ async def test_user_can_update_own_task(
     assert task["due_date"] == "2026-09-10"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_task_returns_404_for_unknown_task(
     client: AsyncClient,
     test_user: User,
@@ -111,7 +111,7 @@ async def test_update_task_returns_404_for_unknown_task(
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_update_another_users_task(
     client: AsyncClient,
     test_user: User,
@@ -182,7 +182,7 @@ async def test_user_cannot_update_another_users_task(
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_update_another_users_task(
     client: AsyncClient,
     admin_user: User,
@@ -260,7 +260,7 @@ async def test_admin_can_update_another_users_task(
     assert task["priority"] == "High"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_task_rejects_invalid_status(
     client: AsyncClient,
     test_user: User,
@@ -314,7 +314,7 @@ async def test_update_task_rejects_invalid_status(
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_task_rejects_invalid_priority(
     client: AsyncClient,
     test_user: User,
@@ -368,7 +368,7 @@ async def test_update_task_rejects_invalid_priority(
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_task_with_null_title_returns_422(
     client: AsyncClient,
     test_user: User,
@@ -424,7 +424,7 @@ async def test_update_task_with_null_title_returns_422(
     assert "title cannot be null" in str(body["error"]["details"])
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_task_with_null_status_returns_422(
     client: AsyncClient,
     test_user: User,
@@ -480,7 +480,7 @@ async def test_update_task_with_null_status_returns_422(
     assert "status cannot be null" in str(body["error"]["details"])
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_task_with_null_priority_returns_422(
     client: AsyncClient,
     test_user: User,

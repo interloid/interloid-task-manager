@@ -7,7 +7,7 @@ from app.models.user import User
 from tests.utils.notification import create_notification
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_mark_all_notifications_as_read(
     client: AsyncClient,
     test_user: User,
@@ -37,7 +37,7 @@ async def test_user_can_mark_all_notifications_as_read(
     assert count_response.json()["data"]["unread_count"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_mark_all_as_read_when_no_unread_notifications(
     client: AsyncClient,
     test_user: User,
@@ -63,7 +63,7 @@ async def test_mark_all_as_read_when_no_unread_notifications(
     assert response.json()["data"]["updated_count"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_mark_all_as_read_does_not_change_other_users_notifications(
     client: AsyncClient,
     test_user: User,
@@ -91,7 +91,7 @@ async def test_mark_all_as_read_does_not_change_other_users_notifications(
     assert second_count_response.json()["data"]["unread_count"] == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_mark_all_as_read_preserves_existing_read_notifications(
     client: AsyncClient,
     test_user: User,
@@ -126,7 +126,7 @@ async def test_mark_all_as_read_preserves_existing_read_notifications(
     assert matching_notification["status"] == "read"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_mark_all_notifications_as_read(
     client: AsyncClient,
 ) -> None:

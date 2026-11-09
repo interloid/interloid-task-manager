@@ -7,7 +7,7 @@ from app.models import User
 from tests.utils.notification import create_notification
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_get_own_notifications(
     test_user: User,
     client: AsyncClient,
@@ -40,7 +40,7 @@ async def test_user_can_get_own_notifications(
     assert response.status_code == 200
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_get_another_users_notifications(
     client: AsyncClient,
     test_user: User,
@@ -64,7 +64,7 @@ async def test_user_cannot_get_another_users_notifications(
     assert body["pagination"]["total"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_gets_empty_notifications(
     client: AsyncClient,
     test_user: User,
@@ -90,7 +90,7 @@ async def test_user_gets_empty_notifications(
     assert response.json()["pagination"]["total"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_get_notifications(
     client: AsyncClient,
 ) -> None:
@@ -99,7 +99,7 @@ async def test_unauthenticated_user_cannot_get_notifications(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_filter_unread_notifications(
     test_user: User,
     client: AsyncClient,
@@ -133,7 +133,7 @@ async def test_user_can_filter_unread_notifications(
     assert body["pagination"]["total"] == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_filter_read_notifications(
     test_user: User,
     client: AsyncClient,
@@ -167,7 +167,7 @@ async def test_user_can_filter_read_notifications(
     assert body["pagination"]["total"] == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_gets_all_notifications_without_read_filter(
     test_user: User,
     client: AsyncClient,
@@ -202,7 +202,7 @@ async def test_user_gets_all_notifications_without_read_filter(
     assert statuses == {"read", "unread"}
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_filtered_notifications_have_correct_pagination(
     test_user: User,
     client: AsyncClient,
@@ -234,7 +234,7 @@ async def test_filtered_notifications_have_correct_pagination(
     assert body["pagination"]["total_pages"] == 2
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_read_filter_only_returns_current_users_notifications(
     test_user: User,
     second_user: User,
@@ -268,7 +268,7 @@ async def test_read_filter_only_returns_current_users_notifications(
     assert body["pagination"]["total"] == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_notifications_reject_invalid_is_read_value(
     test_user: User,
     client: AsyncClient,

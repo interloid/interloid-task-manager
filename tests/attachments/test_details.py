@@ -8,7 +8,7 @@ from app.models.task_attachment import TaskAttachment
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_attachment_details_success(
     client: AsyncClient,
     test_user: User,

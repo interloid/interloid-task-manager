@@ -27,7 +27,7 @@ async def create_connection_manager() -> tuple[
     return redis, manager, user_id, key
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_acquire_connection() -> None:
     redis, manager, user_id, key = await create_connection_manager()
 
@@ -44,7 +44,7 @@ async def test_acquire_connection() -> None:
         await redis.aclose()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_rejects_connection_when_limit_is_reached() -> None:
     redis, manager, user_id, key = await create_connection_manager()
 
@@ -68,7 +68,7 @@ async def test_rejects_connection_when_limit_is_reached() -> None:
         await redis.aclose()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_release_connection_frees_slot() -> None:
     redis, manager, user_id, key = await create_connection_manager()
 
@@ -93,7 +93,7 @@ async def test_release_connection_frees_slot() -> None:
         await redis.aclose()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_renew_active_connection() -> None:
     redis, manager, user_id, key = await create_connection_manager()
 
@@ -118,7 +118,7 @@ async def test_renew_active_connection() -> None:
         await redis.aclose()
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_expired_connection_cannot_be_renewed() -> None:
     redis, manager, user_id, key = await create_connection_manager()
 

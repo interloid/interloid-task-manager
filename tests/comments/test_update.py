@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from app.models.task import Task
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_own_comment(
     client: AsyncClient,
     test_task: Task,
@@ -35,7 +35,7 @@ async def test_update_own_comment(
     assert body["data"]["content"] == "Updated comment"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_update_another_users_comment(
     client: AsyncClient,
     test_task: Task,
@@ -61,7 +61,7 @@ async def test_admin_can_update_another_users_comment(
     assert response.json()["data"]["content"] == "Comment edited by admin"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_task_owner_cannot_update_admins_comment(
     client: AsyncClient,
     test_task: Task,
@@ -86,7 +86,7 @@ async def test_task_owner_cannot_update_admins_comment(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_update_nonexistent_comment_returns_404(
     client: AsyncClient,
     test_task: Task,

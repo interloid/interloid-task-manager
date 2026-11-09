@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from app.models.task import Task
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_list_task_comments(
     client: AsyncClient,
     test_task: Task,
@@ -36,7 +36,7 @@ async def test_list_task_comments(
     assert body["pagination"]["total_pages"] == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_list_task_comments_pagination(
     client: AsyncClient,
     test_task: Task,
@@ -81,7 +81,7 @@ async def test_list_task_comments_pagination(
     assert first_ids.isdisjoint(second_ids)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_list_task_comments_empty(
     client: AsyncClient,
     test_task: Task,
@@ -101,7 +101,7 @@ async def test_list_task_comments_empty(
     assert body["pagination"]["total_pages"] == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("params", "expected_status"),
     [

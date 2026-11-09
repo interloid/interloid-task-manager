@@ -8,7 +8,7 @@ from app.models.user import User
 from tests.utils.notification import create_notification
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_mark_own_notification_as_read(
     client: AsyncClient,
     test_user: User,
@@ -32,7 +32,7 @@ async def test_user_can_mark_own_notification_as_read(
     assert body["data"]["status"] == "read"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_mark_nonexistent_notification_as_read_returns_404(
     client: AsyncClient,
     test_user: User,
@@ -58,7 +58,7 @@ async def test_mark_nonexistent_notification_as_read_returns_404(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_mark_another_users_notification_as_read(
     client: AsyncClient,
     test_user: User,
@@ -76,7 +76,7 @@ async def test_user_cannot_mark_another_users_notification_as_read(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_mark_notification_as_read(
     client: AsyncClient,
 ) -> None:
@@ -87,7 +87,7 @@ async def test_unauthenticated_user_cannot_mark_notification_as_read(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_mark_already_read_notification_as_read(
     client: AsyncClient,
     test_user: User,
