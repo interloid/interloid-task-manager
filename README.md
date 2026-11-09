@@ -40,7 +40,6 @@ Interloid Task Manager features robust JWT-based authentication, role-based auth
 - **Password Security:** High-entropy password hashing using Argon2 (`pwdlib[argon2]`).
 - **Role-Based Access Control (RBAC):** Distinct roles (`ADMIN` vs `USER`). Protections prevent accidental deletion or deactivation of the last active administrator.
 
-
 ### Task Management
 - **Full CRUD:** Create, list, retrieve, update, and delete tasks.
 - **Filtering & Search:** Filter tasks by status (`Todo`, `In Progress`, `Done`), priority (`Low`, `Medium`, `High`), due date ranges, and case-insensitive keyword search.
