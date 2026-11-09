@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 from uuid6 import uuid7
 
 from app.core.config import settings
@@ -44,6 +45,7 @@ validate_test_database()
 test_engine = create_async_engine(
     settings.database_url,
     echo=False,
+    poolclass=NullPool,
 )
 
 TestSessionLocal = async_sessionmaker(
