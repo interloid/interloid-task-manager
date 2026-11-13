@@ -31,6 +31,7 @@ dependencies = [
     "boto3>=1.43.111",
     "python-multipart>=0.0.32",
     "python-magic>=0.4.27",
+    "arq>=0.25.0",
 ]
 
 [dependency-groups]

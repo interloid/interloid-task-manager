@@ -84,8 +84,10 @@ async def generic_exception_handler(
     exc: Exception,
 ) -> JSONResponse:
     logger.exception(
-        "Unhandled exception",
-        exc_info=exc,
+        "Unhandled exception | request_id=%s | %s %s",
+        getattr(request.state, "request_id", "unknown"),
+        request.method,
+        request.url.path,
     )
 
     return JSONResponse(

@@ -239,7 +239,7 @@ async def test_refresh_token_with_missing_user_returns_401(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_refresh_token_replay_revokes_only_compromised_family(
     client: AsyncClient,
     test_user: User,

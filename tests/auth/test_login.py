@@ -108,7 +108,7 @@ async def test_login_stores_refresh_token_hash(
     assert stored_token.revoked_at is None
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_login_rate_limit_after_five_failures(
     client: AsyncClient,
     test_user: User,
@@ -146,7 +146,7 @@ async def test_login_rate_limit_after_five_failures(
     assert retry_after > 0
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_login_rate_limit_is_applied_per_email(
     test_user: User,
 ) -> None:
@@ -191,7 +191,7 @@ async def test_login_rate_limit_is_applied_per_email(
     assert response.json()["error"]["code"] == ("LOGIN_RATE_LIMIT_EXCEEDED")
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_login_rate_limit_is_applied_per_ip(
     client: AsyncClient,
 ) -> None:

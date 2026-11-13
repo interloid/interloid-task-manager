@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_returns_current_user_tasks(
     client: AsyncClient,
     test_user: User,
@@ -68,7 +68,7 @@ async def test_get_tasks_returns_current_user_tasks(
     assert task["priority"] == "High"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_with_filters_and_search(
     client: AsyncClient,
     test_user: User,
@@ -151,7 +151,7 @@ async def test_get_tasks_with_filters_and_search(
     assert task["priority"] == "High"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_rejects_limit_above_100(
     client: AsyncClient,
     test_user: User,
@@ -186,7 +186,7 @@ async def test_get_tasks_rejects_limit_above_100(
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_rejects_inverted_due_date_range(
     client: AsyncClient,
     test_user: User,
@@ -221,7 +221,7 @@ async def test_get_tasks_rejects_inverted_due_date_range(
     assert body["error"]["code"] == "VALIDATION_ERROR"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_returns_only_current_user_tasks(
     client: AsyncClient,
     test_user: User,
@@ -278,7 +278,7 @@ async def test_get_tasks_returns_only_current_user_tasks(
     assert all(task["owner_id"] == str(test_user.id) for task in data)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_get_all_tasks(
     client: AsyncClient,
     admin_user: User,
@@ -352,7 +352,7 @@ async def test_admin_can_get_all_tasks(
     )
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_filter_tasks_by_owner_id(
     client: AsyncClient,
     admin_user: User,
@@ -423,7 +423,7 @@ async def test_admin_can_filter_tasks_by_owner_id(
     assert all(task["owner_id"] == str(test_user.id) for task in data)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_filters_by_inclusive_due_date_range(
     client: AsyncClient,
     test_user: User,
@@ -492,7 +492,7 @@ async def test_get_tasks_filters_by_inclusive_due_date_range(
     assert "Due range end task" in titles
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_search_is_case_insensitive(
     client: AsyncClient,
     test_user: User,
@@ -544,7 +544,7 @@ async def test_get_tasks_search_is_case_insensitive(
     assert any(task["title"] == "Deploy Production API" for task in data)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_pagination_limit_and_offset(
     client: AsyncClient,
     test_user: User,
@@ -603,7 +603,7 @@ async def test_get_tasks_pagination_limit_and_offset(
     assert len(data) == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_tasks_pagination_page_skips_records(
     client: AsyncClient,
     test_user: User,
@@ -661,7 +661,7 @@ async def test_get_tasks_pagination_page_skips_records(
     assert len(data) == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_normal_user_cannot_filter_tasks_by_another_owner(
     client: AsyncClient,
     test_user: User,
@@ -714,7 +714,7 @@ async def test_normal_user_cannot_filter_tasks_by_another_owner(
     assert all(task["owner_id"] == str(test_user.id) for task in data)
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_tasks_sort_by_created_at_asc(
     client: AsyncClient,
     test_user: User,
@@ -778,7 +778,7 @@ async def test_tasks_sort_by_created_at_asc(
     )
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_tasks_sort_by_created_at_desc(
     client: AsyncClient,
     test_user: User,
@@ -843,7 +843,7 @@ async def test_tasks_sort_by_created_at_desc(
     )
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_tasks_sort_by_priority_asc(
     client: AsyncClient,
     test_user: User,
@@ -907,7 +907,7 @@ async def test_tasks_sort_by_priority_asc(
     ]
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_tasks_sort_by_priority_desc(
     client: AsyncClient,
     test_user: User,
@@ -971,7 +971,7 @@ async def test_tasks_sort_by_priority_desc(
     ]
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_tasks_sort_by_due_date_asc(
     client: AsyncClient,
     test_user: User,
@@ -1046,7 +1046,7 @@ async def test_tasks_sort_by_due_date_asc(
     ]
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_tasks_sort_by_due_date_desc(
     client: AsyncClient,
     test_user: User,
@@ -1121,7 +1121,7 @@ async def test_tasks_sort_by_due_date_desc(
     ]
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_invalid_sort_by_returns_422(
     client: AsyncClient,
     test_user: User,
@@ -1153,7 +1153,7 @@ async def test_invalid_sort_by_returns_422(
     assert response.status_code == 422
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_invalid_sort_order_returns_422(
     client: AsyncClient,
     test_user: User,

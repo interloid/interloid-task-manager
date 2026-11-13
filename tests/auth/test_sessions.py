@@ -10,7 +10,7 @@ from app.models.refresh_token import RefreshToken
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_sessions_returns_current_session(
     client: AsyncClient,
     test_user: User,
@@ -58,7 +58,7 @@ async def test_get_sessions_returns_current_session(
     assert sessions[0]["expires_at"] is not None
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_current_session_id_matches_access_token_sid(
     client: AsyncClient,
     test_user: User,
@@ -94,7 +94,7 @@ async def test_current_session_id_matches_access_token_sid(
     assert sessions[0]["is_current"] is True
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_sessions_returns_multiple_active_sessions(
     client: AsyncClient,
     test_user: User,
@@ -145,7 +145,7 @@ async def test_get_sessions_returns_multiple_active_sessions(
     assert len(current_sessions) == 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_sessions_excludes_revoked_sessions(
     client: AsyncClient,
     test_user: User,
@@ -199,7 +199,7 @@ async def test_get_sessions_excludes_revoked_sessions(
     assert body["data"][0]["is_current"] is True
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_sessions_excludes_expired_sessions(
     client: AsyncClient,
     test_user: User,
@@ -247,7 +247,7 @@ async def test_get_sessions_excludes_expired_sessions(
     assert body["data"][0]["is_current"] is True
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_get_sessions_without_access_token_returns_401(
     client: AsyncClient,
 ) -> None:
@@ -258,7 +258,7 @@ async def test_get_sessions_without_access_token_returns_401(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_revoke_single_session(
     client: AsyncClient,
     test_user: User,
@@ -332,7 +332,7 @@ async def test_revoke_single_session(
     assert current_refresh_response.status_code == 200
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_revoke_nonexistent_session_returns_404(
     client: AsyncClient,
     test_user: User,
@@ -357,7 +357,7 @@ async def test_revoke_nonexistent_session_returns_404(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_revoke_session_requires_authentication(
     client: AsyncClient,
 ) -> None:
@@ -368,7 +368,7 @@ async def test_revoke_session_requires_authentication(
     assert response.status_code == 401
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_revoked_session_access_token_returns_401(
     client: AsyncClient,
     test_user: User,

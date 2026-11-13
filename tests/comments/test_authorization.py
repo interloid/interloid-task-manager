@@ -7,7 +7,7 @@ from app.models.task import Task
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_create_comment_on_another_users_task(
     client: AsyncClient,
     db_session: AsyncSession,
@@ -34,7 +34,7 @@ async def test_user_cannot_create_comment_on_another_users_task(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_list_another_users_task_comments(
     client: AsyncClient,
     db_session: AsyncSession,
@@ -60,7 +60,7 @@ async def test_user_cannot_list_another_users_task_comments(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_list_another_users_task_comments(
     client: AsyncClient,
     test_task: Task,
@@ -87,7 +87,7 @@ async def test_admin_can_list_another_users_task_comments(
     assert any(comment["content"] == "Comment on task" for comment in body["data"])
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_update_another_users_task_comment(
     client: AsyncClient,
     db_session: AsyncSession,
@@ -114,7 +114,7 @@ async def test_user_cannot_update_another_users_task_comment(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_delete_another_users_task_comment(
     client: AsyncClient,
     db_session: AsyncSession,
@@ -140,7 +140,7 @@ async def test_user_cannot_delete_another_users_task_comment(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_list_comments(
     client: AsyncClient,
     test_task: Task,

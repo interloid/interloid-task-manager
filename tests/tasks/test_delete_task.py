@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from app.models.user import User
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_can_delete_own_task(
     client: AsyncClient,
     test_user: User,
@@ -54,7 +54,7 @@ async def test_user_can_delete_own_task(
     assert body["message"] == "Task deleted successfully"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_deleted_task_returns_404(
     client: AsyncClient,
     test_user: User,
@@ -112,7 +112,7 @@ async def test_deleted_task_returns_404(
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_user_cannot_delete_another_users_task(
     client: AsyncClient,
     test_user: User,
@@ -180,7 +180,7 @@ async def test_user_cannot_delete_another_users_task(
     assert body["error"]["code"] == "TASK_NOT_FOUND"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_delete_another_users_task(
     client: AsyncClient,
     admin_user: User,
@@ -247,7 +247,7 @@ async def test_admin_can_delete_another_users_task(
     assert body["message"] == "Task deleted successfully"
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_delete_task_returns_404_for_unknown_task(
     client: AsyncClient,
     test_user: User,

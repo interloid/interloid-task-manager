@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from app.models.task import Task
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_delete_own_comment(
     client: AsyncClient,
     test_task: Task,
@@ -39,7 +39,7 @@ async def test_delete_own_comment(
     assert get_response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_admin_can_delete_another_users_comment(
     client: AsyncClient,
     test_task: Task,
@@ -64,7 +64,7 @@ async def test_admin_can_delete_another_users_comment(
     assert response.json()["success"] is True
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_task_owner_cannot_delete_admins_comment(
     client: AsyncClient,
     test_task: Task,
@@ -88,7 +88,7 @@ async def test_task_owner_cannot_delete_admins_comment(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_delete_nonexistent_comment_returns_404(
     client: AsyncClient,
     test_task: Task,
@@ -102,7 +102,7 @@ async def test_delete_nonexistent_comment_returns_404(
     assert response.status_code == 404
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_unauthenticated_user_cannot_delete_comment(
     client: AsyncClient,
     test_task: Task,
